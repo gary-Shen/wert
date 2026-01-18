@@ -9,6 +9,7 @@ dotenv.config();
 // If POSTGRES_URL is missing, fall back to "pg" driver with split params.
 
 let connectionString = process.env.POSTGRES_URL;
+let sslConfig: boolean | { rejectUnauthorized: boolean } | undefined = { rejectUnauthorized: false };
 
 if (!connectionString) {
   const host = process.env.DB_HOST || "localhost";
@@ -18,10 +19,17 @@ if (!connectionString) {
   const dbName = process.env.DB_NAME || "snapworth";
   
   connectionString = `postgres://${user}:${password}@${host}:${port}/${dbName}`;
+  sslConfig = false;
+} else {
+  // Fix for "Self-signed certificate" errors by forcing no-verify in URL
+   connectionString = connectionString.includes('?') 
+    ? `${connectionString}&sslmode=no-verify` 
+    : `${connectionString}?sslmode=no-verify`;
 }
 
 const pool = new Pool({
   connectionString,
+  ssl: sslConfig,
 });
 
 export const db = drizzle(pool, { schema });

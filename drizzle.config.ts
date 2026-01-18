@@ -7,12 +7,19 @@ export default defineConfig({
   schema: "./db/schema.ts",
   out: "./drizzle",
   dialect: "postgresql",
-  dbCredentials: {
-    host: process.env.DB_HOST || "localhost",
-    port: Number(process.env.DB_PORT) || 3306,
-    user: process.env.DB_USER || "root",
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME || "test",
-    // url: process.env.POSTGRES_URL!,
-  },
+  dbCredentials: process.env.POSTGRES_URL
+    ? {
+        url: process.env.POSTGRES_URL?.includes("?")
+          ? `${process.env.POSTGRES_URL}&sslmode=no-verify`
+          : `${process.env.POSTGRES_URL}?sslmode=no-verify`,
+        ssl: { rejectUnauthorized: false }
+      }
+    : {
+        host: process.env.DB_HOST || "localhost",
+        port: Number(process.env.DB_PORT) || 5432,
+        user: process.env.DB_USER || "postgres",
+        password: process.env.DB_PASSWORD || "",
+        database: process.env.DB_NAME || "snapworth",
+        ssl: false,
+      },
 });

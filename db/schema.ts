@@ -14,7 +14,7 @@ import {
 import type { AdapterAccountType } from "next-auth/adapters";
 
 // --- Enums ---
-export const assetCategoryEnum = pgEnum("asset_category", ["CASH", "STOCK", "REAL_ESTATE", "LIABILITY"]);
+export const assetCategoryEnum = pgEnum("asset_category", ["CASH", "STOCK", "FUND", "BOND", "REAL_ESTATE", "LIABILITY", "CRYPTO", "VEHICLE", "PRECIOUS_METAL", "COLLECTIBLE"]);
 
 // --- Auth Core (NextAuth) ---
 export const users = pgTable("user", {

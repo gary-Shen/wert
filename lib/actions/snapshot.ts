@@ -17,6 +17,7 @@ export type AssetSnapshotDraft = {
   calculatedValue: number;
   currentValue: number;
   isDirty: boolean;
+  exchangeRate: number; // For UI preview
 };
 
 export async function prepareSnapshotDraft(): Promise<AssetSnapshotDraft[]> {
@@ -33,11 +34,11 @@ export async function prepareSnapshotDraft(): Promise<AssetSnapshotDraft[]> {
   // 2. Fetch Last Snapshot
   const lastSnapshotList = await db.select().from(snapshots)
     .where(eq(snapshots.userId, userId))
-    .orderBy(desc(snapshots.snapDate))
+    .orderBy(desc(snapshots.snapDate), desc(snapshots.createdAt))
     .limit(1);
   const lastSnapshot = lastSnapshotList[0];
   
-  let previousRecordsMap = new Map<string, number>();
+  const previousRecordsMap = new Map<string, number>();
   if (lastSnapshot) {
      const items = await db.select().from(snapshotItems).where(eq(snapshotItems.snapshotId, lastSnapshot.id));
      items.forEach(r => previousRecordsMap.set(r.assetAccountId, parseFloat(r.originalAmount)));
@@ -70,6 +71,8 @@ export async function prepareSnapshotDraft(): Promise<AssetSnapshotDraft[]> {
       }
     }
 
+    const rate = await getExchangeRate(asset.currency);
+
     drafts.push({
       assetId: asset.id,
       name: asset.name,
@@ -79,6 +82,7 @@ export async function prepareSnapshotDraft(): Promise<AssetSnapshotDraft[]> {
       calculatedValue: calculated,
       currentValue: calculated, 
       isDirty: false,
+      exchangeRate: rate
     });
   }
 

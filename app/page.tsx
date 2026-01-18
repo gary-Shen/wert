@@ -5,6 +5,7 @@ import { desc, eq } from "drizzle-orm";
 import { SnapCarousel } from "@/components/dashboard/SnapCarousel";
 import { SnapButton } from "@/components/snap-flow/SnapButton";
 import { redirect } from "next/navigation";
+import { ChartData, DashboardData, SnapshotHistoryItem } from "@/components/dashboard/types";
 
 export default async function Home() {
   const session = await auth();
@@ -17,7 +18,7 @@ export default async function Home() {
   // 1. Fetch History
   const history = await db.select().from(snapshots)
     .where(eq(snapshots.userId, userId))
-    .orderBy(desc(snapshots.snapDate));
+    .orderBy(desc(snapshots.snapDate), desc(snapshots.createdAt));
 
   // 2. Fetch Latest Details
   const latest = history[0];
@@ -30,23 +31,54 @@ export default async function Home() {
     liabilitiesTotal = parseFloat(latest.totalLiabilities || "0");
   }
 
+  // Helper to safely format date
+  const formatDate = (date: Date | string | null): string => {
+    if (!date) return '';
+    if (date instanceof Date) return date.toISOString().split('T')[0];
+    return String(date);
+  };
+
   // 3. Trend
   // Reverse history for chart (Oldest -> Newest)
   const trend = [...history].reverse().map(h => ({
-    date: typeof h.snapDate === 'string' ? h.snapDate : h.snapDate.toISOString().split('T')[0],
+    date: formatDate(h.snapDate),
     value: parseFloat(h.totalNetWorth)
   }));
 
-  const data = {
+  // 4. Pie Chart Data (Latest Snapshot Breakdown)
+  let pieChartData: ChartData[] = [];
+  if (latest) {
+    const items = await db.select({
+      name: assetAccounts.name,
+      value: snapshotItems.valuation,
+      category: assetAccounts.category
+    })
+      .from(snapshotItems)
+      .innerJoin(assetAccounts, eq(snapshotItems.assetAccountId, assetAccounts.id))
+      .where(eq(snapshotItems.snapshotId, latest.id));
+
+    pieChartData = items.map(item => ({
+      name: item.name,
+      value: parseFloat(item.value || '0'),
+      category: item.category
+    }));
+  }
+
+  const snapshotHistory: SnapshotHistoryItem[] = history.map(h => ({
+    ...h,
+    date: formatDate(h.snapDate),
+    totalNetWorthCny: parseFloat(h.totalNetWorth),
+    // Ensure strict type compliance
+    createdAt: h.createdAt,
+  }));
+
+  const data: DashboardData = {
     netWorth: latest ? parseFloat(latest.totalNetWorth) : 0,
     assets: assetsTotal,
     liabilities: liabilitiesTotal,
     trend,
-    snapshots: history.map(h => ({
-      ...h,
-      totalNetWorthCny: parseFloat(h.totalNetWorth), // Adapt for component strict type if needed
-      date: typeof h.snapDate === 'string' ? h.snapDate : h.snapDate.toISOString().split('T')[0]
-    }))
+    pieChartData,
+    snapshots: snapshotHistory
   };
 
   return (

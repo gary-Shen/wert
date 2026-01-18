@@ -45,8 +45,8 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Take a Snapshot</DialogTitle>
-          <DialogDescription>Review and update your asset values for {date}.</DialogDescription>
+          <DialogTitle>创建快照</DialogTitle>
+          <DialogDescription>回顾并更新 {date} 的资产价值。</DialogDescription>
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto py-4 px-1">
@@ -59,7 +59,7 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
           {step === "REVIEW" && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <Label>Date</Label>
+                <Label>日期</Label>
                 <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
               </div>
 
@@ -71,7 +71,7 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
                       <div className="text-xs text-muted-foreground">{asset.type} • {asset.currency}</div>
                       {asset.calculatedValue !== asset.previousValue && (
                         <div className="text-xs text-blue-500 mt-1">
-                          Auto-calculated: {asset.calculatedValue.toFixed(2)}
+                          自动计算: {asset.calculatedValue.toFixed(2)}
                         </div>
                       )}
                     </div>
@@ -83,9 +83,27 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
                         className={asset.isDirty ? "border-primary bg-primary/5" : ""}
                       />
                     </div>
+                    {asset.currency !== "CNY" && (
+                      <div className="absolute right-0 -bottom-5 text-xs text-muted-foreground w-40 text-right">
+                        ≈ {(asset.currentValue * (asset.exchangeRate || 1)).toLocaleString()} CNY
+                      </div>
+                    )}
                   </div>
                 ))}
-                {drafts.length === 0 && <div className="text-center text-muted-foreground">No active assets found. Go to Settings to add them.</div>}
+
+                {drafts.length > 0 && (
+                  <div className="flex justify-between items-center p-4 mt-6 bg-muted rounded-lg font-bold">
+                    <span>预计总净值:</span>
+                    <span>
+                      {drafts.reduce((sum, item) => {
+                        const valCny = item.currentValue * (item.exchangeRate || 1);
+                        return item.type === "LIABILITY" ? sum - valCny : sum + valCny;
+                      }, 0).toLocaleString()} CNY
+                    </span>
+                  </div>
+                )}
+
+                {drafts.length === 0 && <div className="text-center text-muted-foreground">未找到活跃资产。请前往设置添加。</div>}
               </div>
             </div>
           )}
@@ -93,14 +111,14 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
           {step === "SAVING" && (
             <div className="flex justify-center py-8">
               <Loader2 className="animate-spin h-8 w-8 text-primary" />
-              <span className="ml-2">Saving Snapshot...</span>
+              <span className="ml-2">正在保存快照...</span>
             </div>
           )}
         </div>
 
         <DialogFooter>
           {step === "REVIEW" && (
-            <Button onClick={handleSave} disabled={drafts.length === 0}>Confirm Snapshot</Button>
+            <Button onClick={handleSave} disabled={drafts.length === 0}>确认快照</Button>
           )}
         </DialogFooter>
       </DialogContent>

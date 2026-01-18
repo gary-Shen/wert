@@ -10,7 +10,7 @@ export default function LoginPage() {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">SnapWorth</CardTitle>
           <CardDescription>
-            Login to access your asset snapshots
+            登录以访问您的资产快照
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -21,7 +21,7 @@ export default function LoginPage() {
             }}
           >
             <Button className="w-full" type="submit">
-              Sign in with Google
+              通过 Google 登录
             </Button>
           </form>
           <form
@@ -31,7 +31,7 @@ export default function LoginPage() {
             }}
           >
             <Button className="w-full" variant="outline" type="submit">
-              Sign in with GitHub
+              通过 GitHub 登录
             </Button>
           </form>
         </CardContent>
