@@ -9,13 +9,15 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { Plus, Trash2, Archive, ArchiveRestore, Pencil } from "lucide-react";
 import { useState, useTransition, useCallback } from "react";
+import { AssetEditModal } from "@/components/settings/AssetEditModal";
 
 export function AssetManagement({ initialAssets, onAssetsChange }: { initialAssets: any[], onAssetsChange?: () => void }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [restoreCandidate, setRestoreCandidate] = useState<any>(null);
+  const [editingAssetId, setEditingAssetId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -279,6 +281,17 @@ export function AssetManagement({ initialAssets, onAssetsChange }: { initialAsse
                 <span className="text-xs text-muted-foreground">{asset.category} • {asset.currency} • {asset.isArchived ? "已归档" : "活跃"}</span>
               </div>
               <div className="flex items-center gap-1">
+                {/* Edit Button */}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingAssetId(asset.id)}
+                  title="编辑"
+                  disabled={isPending}
+                >
+                  <Pencil className="h-4 w-4 text-muted-foreground" />
+                </Button>
+
                 {!asset.isArchived ? (
                   <Button variant="ghost" size="icon" onClick={() => startTransition(async () => {
                     await archiveAsset(asset.id);
@@ -326,6 +339,17 @@ export function AssetManagement({ initialAssets, onAssetsChange }: { initialAsse
           )}
         </div>
       </CardContent>
+
+      {/* Asset Edit Modal */}
+      <AssetEditModal
+        assetId={editingAssetId}
+        open={!!editingAssetId}
+        onOpenChange={(open) => !open && setEditingAssetId(null)}
+        onSuccess={() => {
+          setEditingAssetId(null);
+          onAssetsChange?.();
+        }}
+      />
     </Card>
   );
 }

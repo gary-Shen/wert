@@ -1,0 +1,9 @@
+﻿id,userId,name,category,currency,isArchived,autoConfig,symbol,market,quantity,costBasis,createdAt
+d75453a4-77b4-424d-91df-9e2d2847fd24,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,储蓄,CASH,CNY,,{},,,"0.000000",,2026-01-24 14:09:06.89986+00
+2b6270b1-1fd9-402a-9f61-cb9e8ede4005,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,特斯拉 Model Y,VEHICLE,CNY,,{},,,"0.000000",,2026-01-24 14:09:54.671407+00
+391a9092-f9c4-4874-881a-9c2b054804ca,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,特斯拉贷款,LIABILITY,CNY,,"{""initialLoan"": 45900, ""repaymentDate"": ""2026-01-24"", ""monthlyPayment"": 3600}",,,"0.000000",,2026-01-24 14:10:19.586348+00
+715d2e15-d02d-4710-84bf-7f930cc6ea87,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,徐汇区,REAL_ESTATE,CNY,,"{""purchaseDate"": ""2019-12-30"", ""purchasePrice"": 3500000, ""lifespanMonths"": 840}",,,"0.000000",,2026-01-24 14:13:02.112108+00
+d1c7bf13-43ac-4fd3-a4da-9af6c6f13796,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,特斯拉长桥,STOCK,CNY,,{},TSLA.US,US,"40.000000",,2026-01-24 13:42:51.440279+00
+b655aec2-7899-4eee-bf8a-606674ae675e,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,英伟达 长桥,STOCK,USD,,{},NVDA.US,US,"50.000000",,2026-01-24 14:15:57.89405+00
+8f6989ce-bd52-4c83-9bdf-5f802f48bf00,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,贵州茅台,STOCK,USD,,{},600519.CN,CN,"50.000000",,2026-01-24 14:16:27.805259+00
+e5dc398f-ecb7-418e-bc6d-0e23dbb49c93,wTtWyxEYjqIY4Gfamwmw76WGXHl1p3bs,纳斯达克100指数,FUND,USD,,{},NDX,US,"150.000000",,2026-01-24 13:36:51.598146+00

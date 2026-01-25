@@ -83,7 +83,7 @@ async function withRetry<T>(
   throw lastError;
 }
 
-export const syncPriceWorker = async () => {
+export const syncPriceWorker = async (): Promise<{ total: number; success: number; failed: number; skipped: number }> => {
   // 1. 获取所有活跃持仓的 unique symbol
   const activeAssets = await db
     .selectDistinct({ symbol: assetAccounts.symbol })
@@ -92,14 +92,22 @@ export const syncPriceWorker = async () => {
 
   log.info("Found active assets to sync", { count: activeAssets.length });
 
+  let success = 0;
+  let failed = 0;
+  let skipped = 0;
+
   for (const { symbol } of activeAssets) {
-    if (!symbol) continue;
+    if (!symbol) {
+      skipped++;
+      continue;
+    }
 
     try {
       const data = await priceService.fetchAsset(symbol);
 
       if (!data) {
         log.warn("Skipped asset: no data returned", { symbol });
+        skipped++;
         continue;
       }
 
@@ -119,10 +127,21 @@ export const syncPriceWorker = async () => {
         }
       });
 
+      success++;
+      log.debug("Price synced", { symbol, price: data.price });
+
     } catch (err) {
       log.error("Asset sync failed", { symbol, error: String(err) });
+      failed++;
     }
   }
+
+  return {
+    total: activeAssets.length,
+    success,
+    failed,
+    skipped
+  };
 };
 
 /**

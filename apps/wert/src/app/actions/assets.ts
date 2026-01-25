@@ -94,3 +94,67 @@ export async function getAssets(): Promise<AssetAccount[]> {
 export async function searchAssetSymbols(query: string): Promise<SearchResult[]> {
   return await searchSymbols(query);
 }
+
+// Update asset data
+export interface UpdateAssetData {
+  name?: string;
+  currency?: string;
+  symbol?: string;
+  market?: string;
+  quantity?: string;
+  costBasis?: string;
+  autoConfig?: Record<string, any> | null;
+}
+
+export async function updateAsset(
+  id: string,
+  data: UpdateAssetData
+): Promise<AssetAccount | null> {
+  const userId = await getAuthUser();
+
+  // Verify ownership
+  const [existing] = await db.select()
+    .from(assetAccounts)
+    .where(and(eq(assetAccounts.id, id), eq(assetAccounts.userId, userId)));
+
+  if (!existing) {
+    throw new Error("Asset not found");
+  }
+
+  // Build update object
+  const updateFields: Partial<typeof assetAccounts.$inferInsert> = {};
+
+  if (data.name !== undefined) updateFields.name = data.name;
+  if (data.currency !== undefined) updateFields.currency = data.currency;
+  if (data.symbol !== undefined) updateFields.symbol = data.symbol || null;
+  if (data.market !== undefined) updateFields.market = data.market || null;
+  if (data.quantity !== undefined) updateFields.quantity = data.quantity || "0";
+  if (data.costBasis !== undefined) updateFields.costBasis = data.costBasis || null;
+  if (data.autoConfig !== undefined) updateFields.autoConfig = data.autoConfig;
+
+  const [updated] = await db.update(assetAccounts)
+    .set(updateFields)
+    .where(eq(assetAccounts.id, id))
+    .returning();
+
+  revalidatePath("/settings");
+  revalidatePath("/");
+
+  return updated;
+}
+
+export async function getAssetById(id: string): Promise<AssetAccount | null> {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  if (!session?.user?.id) return null;
+
+  const [asset] = await db.select()
+    .from(assetAccounts)
+    .where(and(
+      eq(assetAccounts.id, id),
+      eq(assetAccounts.userId, session.user.id)
+    ));
+
+  return asset || null;
+}

@@ -40,4 +40,5 @@ export interface AssetChange {
   changeValue: number
   changePercentage: number
   isNew: boolean
+  isRemoved?: boolean
 }

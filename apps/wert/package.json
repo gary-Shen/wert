@@ -28,8 +28,6 @@
     "drizzle-orm": "^0.45.1",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.25.0",
-    "ioredis": "^5.9.2",
-    "longport": "^3.0.20",
     "lucide-react": "^0.562.0",
     "luxon": "^3.7.2",
     "next": "16.1.1",

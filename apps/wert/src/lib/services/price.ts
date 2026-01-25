@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { BigNumber } from 'bignumber.js';
 import YahooFinance from 'yahoo-finance2';
 import { db } from '@/db';
-import { assetDimensions } from '@/db/schema';
-import { sql, ilike, or } from 'drizzle-orm';
+import { assetDimensions, assetPrices } from '@/db/schema';
+import { sql, ilike, or, desc, eq, and } from 'drizzle-orm';
 import { loggers } from '@/lib/logger';
 
 const log = loggers.price;
@@ -27,39 +27,73 @@ const AssetPriceSchema = z.object({
 export type AssetPriceType = z.infer<typeof AssetPriceSchema>;
 
 
+// Timeout for external API calls (in milliseconds)
+const FETCH_TIMEOUT_MS = 10000; // 10 seconds
+
 export class AssetPriceService {
   /**
-   * Helper to fetch data from Python sidecar
+   * Helper to fetch data from Python sidecar with timeout
    */
   private async fetchFromSidecar(endpoint: string, params: Record<string, string>) {
+    // Check if sidecar URL is configured
+    if (!process.env.DATA_SIDECAR_URL) {
+      log.warn("DATA_SIDECAR_URL not configured, skipping sidecar fetch");
+      return null;
+    }
+
     try {
       const url = new URL(`${process.env.DATA_SIDECAR_URL}${endpoint}`);
       Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
 
-      const response = await fetch(url.toString(), {
-        headers: {
-          'X-API-Key': process.env.INTERNAL_API_KEY!
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+
+      try {
+        const response = await fetch(url.toString(), {
+          headers: {
+            'X-API-Key': process.env.INTERNAL_API_KEY || ''
+          },
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`Sidecar responded with ${response.status}`);
         }
-      });
-      if (!response.ok) {
-        throw new Error(`Sidecar responded with ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
       }
-      return await response.json();
     } catch (error) {
-      log.error("Sidecar fetch failed", { endpoint, error: String(error) });
+      if (error instanceof Error && error.name === 'AbortError') {
+        log.error("Sidecar fetch timed out", { endpoint, timeout: FETCH_TIMEOUT_MS });
+      } else {
+        log.error("Sidecar fetch failed", { endpoint, error: String(error) });
+      }
       return null;
     }
   }
 
   /**
    * 抓取全球股票/ETF价格
-   * 修正了过时警告，并加入了 Zod 校验
+   * 修正了过时警告，并加入了 Zod 校验和超时处理
    */
   async fetchGlobalStockPrice(symbol: string) {
     try {
+      // Create timeout promise
+      const timeoutPromise = new Promise<null>((_, reject) => {
+        setTimeout(() => reject(new Error('Yahoo Finance timeout')), FETCH_TIMEOUT_MS);
+      });
+
       // 按照 TS 提示使用方式（或直接使用其默认导出的静态方法，取决于版本，这里采用安全模式）
       const yf = new YahooFinance();
-      const rawResult = await yf.quote(symbol);
+      const fetchPromise = yf.quote(symbol);
+
+      // Race between fetch and timeout
+      const rawResult = await Promise.race([fetchPromise, timeoutPromise]);
       if (!rawResult) return null;
 
       // 使用 Zod 进行运行时校验
@@ -235,28 +269,34 @@ export type SearchResult = Awaited<ReturnType<typeof searchSymbols>>[number];
 export const priceService = new AssetPriceService();
 
 /**
- * Unified fetcher for stocks and funds
- */
-import { assetPrices } from '@/db/schema';
-import { eq, and } from 'drizzle-orm';
-
-/**
  * Unified fetcher for stocks and funds with DB Caching (Read-Through)
+ *
+ * Cache Strategy: Use the most recent price within the last 7 days.
+ * This handles weekends and holidays where markets are closed.
  */
 export async function fetchPrice(symbol: string): Promise<number | null> {
-  const todayStr = new Date().toISOString().split('T')[0];
+  // Calculate date range: last 7 days
+  const today = new Date();
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 7);
+  const minDateStr = sevenDaysAgo.toISOString().split('T')[0];
 
   try {
-    const cached = await db.select({ price: assetPrices.price })
+    // Query the most recent price within the last 7 days
+    const cached = await db.select({
+      price: assetPrices.price,
+      priceDate: assetPrices.priceDate
+    })
       .from(assetPrices)
       .where(and(
         eq(assetPrices.symbol, symbol),
-        eq(assetPrices.priceDate, todayStr)
+        sql`${assetPrices.priceDate} >= ${minDateStr}`
       ))
+      .orderBy(desc(assetPrices.priceDate))
       .limit(1);
 
     if (cached.length > 0) {
-      log.debug("Cache hit", { symbol, price: cached[0].price });
+      log.debug("Cache hit", { symbol, price: cached[0].price, date: cached[0].priceDate });
       return parseFloat(cached[0].price);
     }
   } catch (e) {

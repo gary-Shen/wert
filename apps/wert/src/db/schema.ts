@@ -30,6 +30,10 @@ export const user = pgTable("user", {
   // Custom Fields
   password: text("password"),
   baseCurrency: text("baseCurrency").default("CNY"),
+  // User Settings
+  setupComplete: boolean("setupComplete").default(false).notNull(),
+  locale: text("locale").default("zh-CN"),
+  region: text("region"), // "CN" | "OVERSEAS"
 });
 
 export const session = pgTable("session", {

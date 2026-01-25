@@ -33,6 +33,18 @@ export type AssetSnapshotDraft = {
   market?: string;
 };
 
+export type AssetChange = {
+  assetId: string;
+  name: string;
+  category: string;
+  currentValue: number;
+  previousValue: number;
+  changeValue: number;
+  changePercentage: number;
+  isNew: boolean;
+  isRemoved: boolean;
+};
+
 export async function prepareSnapshotDraft(): Promise<AssetSnapshotDraft[]> {
   const session = await auth.api.getSession({
     headers: await headers()
@@ -63,75 +75,121 @@ export async function prepareSnapshotDraft(): Promise<AssetSnapshotDraft[]> {
     items.forEach(r => previousRecordsMap.set(r.assetAccountId, parseFloat(r.originalAmount)));
   }
 
-  const drafts = await Promise.all(activeAssets.map(async (asset) => {
+  // Helper function to process single asset with timeout
+  const processAssetWithTimeout = async (asset: typeof activeAssets[0], timeoutMs: number = 15000) => {
     const prevVal = previousRecordsMap.get(asset.id) ?? 0;
-    let calculated = prevVal;
-    let unitPrice = 0;
-    const quantity = asset.quantity ? parseFloat(asset.quantity) : 0;
 
-    // A. Priority: Real-time Price (Stocks/Funds)
-    if (asset.symbol && quantity) {
-      // Construct symbol: Ticker + Market (e.g., AAPL.US, 700.HK)
-      let symbolStr = asset.symbol;
-      if (asset.market && !symbolStr.includes('.')) {
-        symbolStr = `${symbolStr}.${asset.market}`;
+    // Create a timeout promise
+    const timeoutPromise = new Promise<null>((resolve) => {
+      setTimeout(() => resolve(null), timeoutMs);
+    });
+
+    // Process asset promise
+    const processPromise = (async () => {
+      let calculated = prevVal;
+      let unitPrice = 0;
+      const quantity = asset.quantity ? parseFloat(asset.quantity) : 0;
+
+      // A. Priority: Real-time Price (Stocks/Funds)
+      if (asset.symbol && quantity) {
+        // Construct symbol: Ticker + Market (e.g., AAPL.US, 700.HK)
+        let symbolStr = asset.symbol;
+        if (asset.market && !symbolStr.includes('.')) {
+          symbolStr = `${symbolStr}.${asset.market}`;
+        }
+
+        try {
+          const price = await fetchPrice(symbolStr);
+          if (price !== null) {
+            unitPrice = price;
+            calculated = price * quantity;
+          }
+        } catch (e) {
+          console.error(`Failed to fetch price for ${symbolStr}:`, e);
+        }
+      }
+      // B. Fallback: Automation Config (Depreciation/Loans)
+      else if (asset.autoConfig) {
+        // Type assertion for autoConfig structure
+        const meta = asset.autoConfig as {
+          purchasePrice?: number;
+          purchaseDate?: string;
+          lifespanMonths?: number;
+          monthlyPayment?: number;
+          initialLoan?: number;
+          repaymentDate?: number | string;
+          paymentDay?: number;
+        };
+
+        if (asset.category === "REAL_ESTATE" && meta.purchasePrice && meta.purchaseDate) {
+          calculated = calculateDepreciation(
+            meta.purchasePrice,
+            meta.purchaseDate,
+            meta.lifespanMonths || 120
+          );
+        } else if (asset.category === "LIABILITY" && meta.monthlyPayment) {
+          // repaymentDate should be the start date of the loan for amortization
+          const startDate = meta.repaymentDate ? new Date(meta.repaymentDate) : new Date();
+          calculated = calculateSimpleLoanAmortization(
+            meta.initialLoan || prevVal,
+            meta.monthlyPayment,
+            startDate
+          );
+        }
       }
 
-      const price = await fetchPrice(symbolStr);
-      if (price !== null) {
-        unitPrice = price;
-        calculated = price * quantity;
+      // Convert to User's Base Currency
+      let rate = new BigNumber(1);
+      try {
+        rate = await getExchangeRate(asset.currency, targetCurrency);
+      } catch (e) {
+        console.error(`Failed to get exchange rate for ${asset.currency}:`, e);
       }
-    }
-    // B. Fallback: Automation Config (Depreciation/Loans)
-    else if (asset.autoConfig) {
-      // Type assertion for autoConfig structure
-      const meta = asset.autoConfig as {
-        purchasePrice?: number;
-        purchaseDate?: string;
-        lifespanMonths?: number;
-        monthlyPayment?: number;
-        initialLoan?: number;
-        repaymentDate?: number | string;
-        paymentDay?: number;
+
+      return {
+        assetId: asset.id,
+        name: asset.name,
+        type: asset.category,
+        currency: asset.currency,
+        previousValue: prevVal,
+        calculatedValue: calculated,
+        currentValue: calculated,
+        isDirty: false,
+        exchangeRate: rate.toNumber(), // UI Display
+        quantity,
+        price: unitPrice,
+        symbol: asset.symbol || undefined,
+        market: asset.market || undefined,
       };
+    })();
 
-      if (asset.category === "REAL_ESTATE" && meta.purchasePrice && meta.purchaseDate) {
-        calculated = calculateDepreciation(
-          meta.purchasePrice,
-          meta.purchaseDate,
-          meta.lifespanMonths || 120
-        );
-      } else if (asset.category === "LIABILITY" && meta.monthlyPayment) {
-        // repaymentDate should be the start date of the loan for amortization
-        const startDate = meta.repaymentDate ? new Date(meta.repaymentDate) : new Date();
-        calculated = calculateSimpleLoanAmortization(
-          meta.initialLoan || prevVal,
-          meta.monthlyPayment,
-          startDate
-        );
-      }
+    // Race between process and timeout
+    const result = await Promise.race([processPromise, timeoutPromise]);
+
+    // If timeout, return fallback draft
+    if (result === null) {
+      console.warn(`Asset processing timed out for ${asset.name}`);
+      return {
+        assetId: asset.id,
+        name: asset.name,
+        type: asset.category,
+        currency: asset.currency,
+        previousValue: prevVal,
+        calculatedValue: prevVal,
+        currentValue: prevVal,
+        isDirty: false,
+        exchangeRate: 1,
+        quantity: asset.quantity ? parseFloat(asset.quantity) : 0,
+        price: 0,
+        symbol: asset.symbol || undefined,
+        market: asset.market || undefined,
+      };
     }
 
-    // Convert to User's Base Currency
-    const rate = await getExchangeRate(asset.currency, targetCurrency);
+    return result;
+  };
 
-    return {
-      assetId: asset.id,
-      name: asset.name,
-      type: asset.category,
-      currency: asset.currency,
-      previousValue: prevVal,
-      calculatedValue: calculated,
-      currentValue: calculated,
-      isDirty: false,
-      exchangeRate: rate.toNumber(), // UI Display
-      quantity,
-      price: unitPrice,
-      symbol: asset.symbol || undefined,
-      market: asset.market || undefined,
-    };
-  }));
+  const drafts = await Promise.all(activeAssets.map(asset => processAssetWithTimeout(asset)));
 
   return drafts;
 }
@@ -151,25 +209,27 @@ export async function commitSnapshot(
   const [userData] = await db.select({ baseCurrency: user.baseCurrency }).from(user).where(eq(user.id, userId));
   const targetCurrency = userData?.baseCurrency || "CNY";
 
+  // Prepare data outside transaction (includes async external calls)
   let totalNetWorth = new BigNumber(0);
   let totalAssets = new BigNumber(0);
   let totalLiabilities = new BigNumber(0);
 
   const itemsToInsert: NewSnapshotItem[] = [];
+  const quantityUpdates: Array<{ assetId: string; quantity: string }> = [];
 
   for (const rec of records) {
     const [asset] = await db.select().from(assetAccounts).where(eq(assetAccounts.id, rec.assetId));
     if (!asset) continue;
 
-    // Update Quantity if provided (Persist new holding amount)
+    // Collect quantity updates for transaction
     if (rec.quantity !== undefined) {
-      await db.update(assetAccounts)
-        .set({ quantity: rec.quantity.toString() })
-        .where(eq(assetAccounts.id, rec.assetId));
+      quantityUpdates.push({
+        assetId: rec.assetId,
+        quantity: rec.quantity.toString()
+      });
     }
 
     const rate = await getExchangeRate(asset.currency, targetCurrency);
-    // valueConverted = rec.value * rate
     const valueConverted = new BigNumber(rec.value).times(rate);
 
     // Categorize
@@ -182,9 +242,6 @@ export async function commitSnapshot(
     }
 
     itemsToInsert.push({
-      // id will be autogenerated? No, schema says defaultFn randomUUID. 
-      // If inferred insert type makes id optional, we are good.
-      // Drizzle usually matches schema defaults.
       snapshotId: "", // Placeholder, will fill after snapshot creation
       assetAccountId: rec.assetId,
       originalAmount: rec.value.toString(),
@@ -203,20 +260,30 @@ export async function commitSnapshot(
     note,
   };
 
-  const [snapshot] = await db.insert(snapshots).values(newSnapshot).returning();
+  // Use transaction to ensure atomicity
+  const snapshot = await db.transaction(async (tx) => {
+    // Update asset quantities
+    for (const update of quantityUpdates) {
+      await tx.update(assetAccounts)
+        .set({ quantity: update.quantity })
+        .where(eq(assetAccounts.id, update.assetId));
+    }
 
-  // Insert Items
-  if (itemsToInsert.length > 0) {
-    // Must assign snapshotId
-    const finalItems = itemsToInsert.map(item => ({
-      ...item,
-      snapshotId: snapshot.id
-    }));
+    // Insert snapshot header
+    const [inserted] = await tx.insert(snapshots).values(newSnapshot).returning();
 
-    await db.insert(snapshotItems).values(finalItems);
-  }
+    // Insert items
+    if (itemsToInsert.length > 0) {
+      const finalItems = itemsToInsert.map(item => ({
+        ...item,
+        snapshotId: inserted.id
+      }));
+      await tx.insert(snapshotItems).values(finalItems);
+    }
 
-  revalidatePath("/");
+    return inserted;
+  });
+
   revalidatePath("/");
   return snapshot;
 }
@@ -287,26 +354,9 @@ export async function getDashboardData(): Promise<DashboardData | null> {
       category: item.category
     }));
 
-    // Construct Comparison Data (Compare with latest snapshot of PREVIOUS month)
-    // Find previous snapshot that is NOT in the same month as current
-    let previous: typeof history[0] | undefined;
-
-    const getYearMonth = (dateStr: string | Date | null) => {
-      if (!dateStr) return '';
-      const d = new Date(dateStr);
-      return `${d.getFullYear()}-${d.getMonth() + 1}`;
-    };
-
-    const currentYM = getYearMonth(latest.snapDate);
-
-    // Start searching from index 1 (history is sorted desc by date)
-    for (let i = 1; i < history.length; i++) {
-      const ym = getYearMonth(history[i].snapDate);
-      if (ym !== currentYM) {
-        previous = history[i];
-        break;
-      }
-    }
+    // Construct Comparison Data (Compare with the PREVIOUS snapshot)
+    // Changed from "previous different month" to "previous snapshot" (history[1])
+    const previous = history[1];
 
     if (previous) {
       const previousItems = await db.select({
@@ -385,11 +435,15 @@ export async function getSnapshotDetails(snapshotId: string) {
   // Fetch items with asset details
   const items = await db.select({
     id: snapshotItems.id,
+    assetAccountId: snapshotItems.assetAccountId,
     assetName: assetAccounts.name,
     assetCategory: assetAccounts.category,
     originalAmount: snapshotItems.originalAmount,
+    exchangeRate: snapshotItems.exchangeRate,
     valuation: snapshotItems.valuation,
     currency: assetAccounts.currency,
+    symbol: assetAccounts.symbol,
+    quantity: assetAccounts.quantity,
   })
     .from(snapshotItems)
     .innerJoin(assetAccounts, eq(snapshotItems.assetAccountId, assetAccounts.id))
@@ -406,7 +460,251 @@ export async function getSnapshotDetails(snapshotId: string) {
     items: items.map(item => ({
       ...item,
       originalAmount: parseFloat(item.originalAmount),
-      valuation: parseFloat(item.valuation)
+      exchangeRate: parseFloat(item.exchangeRate),
+      valuation: parseFloat(item.valuation),
+      quantity: item.quantity ? parseFloat(item.quantity) : undefined,
     }))
   };
+}
+
+// Update snapshot data
+export interface UpdateSnapshotData {
+  snapDate?: string;
+  note?: string;
+  items: Array<{
+    id?: string;
+    assetAccountId: string;
+    originalAmount: number;
+    quantity?: number;
+  }>;
+}
+
+export async function updateSnapshot(
+  snapshotId: string,
+  data: UpdateSnapshotData
+): Promise<Snapshot | null> {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  const userId = session.user.id;
+
+  // Verify ownership
+  const [existing] = await db.select().from(snapshots)
+    .where(and(eq(snapshots.id, snapshotId), eq(snapshots.userId, userId)));
+
+  if (!existing) {
+    throw new Error("Snapshot not found");
+  }
+
+  // Fetch User Settings
+  const [userData] = await db.select({ baseCurrency: user.baseCurrency }).from(user).where(eq(user.id, userId));
+  const targetCurrency = userData?.baseCurrency || "CNY";
+
+  // Prepare data outside transaction (includes async external calls)
+  let totalNetWorth = new BigNumber(0);
+  let totalAssets = new BigNumber(0);
+  let totalLiabilities = new BigNumber(0);
+
+  const newItems: NewSnapshotItem[] = [];
+  const quantityUpdates: Array<{ assetId: string; quantity: string }> = [];
+
+  for (const itemData of data.items) {
+    const [asset] = await db.select().from(assetAccounts).where(eq(assetAccounts.id, itemData.assetAccountId));
+    if (!asset) continue;
+
+    // Collect quantity updates for transaction
+    if (itemData.quantity !== undefined) {
+      quantityUpdates.push({
+        assetId: itemData.assetAccountId,
+        quantity: itemData.quantity.toString()
+      });
+    }
+
+    const rate = await getExchangeRate(asset.currency, targetCurrency);
+    const valueConverted = new BigNumber(itemData.originalAmount).times(rate);
+
+    if (asset.category === "LIABILITY") {
+      totalLiabilities = totalLiabilities.plus(valueConverted);
+      totalNetWorth = totalNetWorth.minus(valueConverted);
+    } else {
+      totalAssets = totalAssets.plus(valueConverted);
+      totalNetWorth = totalNetWorth.plus(valueConverted);
+    }
+
+    newItems.push({
+      snapshotId,
+      assetAccountId: itemData.assetAccountId,
+      originalAmount: itemData.originalAmount.toString(),
+      exchangeRate: rate.toString(),
+      valuation: valueConverted.toFixed(4),
+    });
+  }
+
+  // Execute all database operations in a transaction
+  const updated = await db.transaction(async (tx) => {
+    // Update asset quantities
+    for (const update of quantityUpdates) {
+      await tx.update(assetAccounts)
+        .set({ quantity: update.quantity })
+        .where(eq(assetAccounts.id, update.assetId));
+    }
+
+    // Delete old items
+    await tx.delete(snapshotItems).where(eq(snapshotItems.snapshotId, snapshotId));
+
+    // Insert new items
+    if (newItems.length > 0) {
+      await tx.insert(snapshotItems).values(newItems);
+    }
+
+    // Update snapshot header
+    const [result] = await tx.update(snapshots)
+      .set({
+        snapDate: data.snapDate || existing.snapDate,
+        note: data.note !== undefined ? data.note : existing.note,
+        totalNetWorth: totalNetWorth.toFixed(4),
+        totalAssets: totalAssets.toFixed(4),
+        totalLiabilities: totalLiabilities.toFixed(4),
+      })
+      .where(eq(snapshots.id, snapshotId))
+      .returning();
+
+    return result;
+  });
+
+  revalidatePath("/");
+  return updated;
+}
+
+export async function deleteSnapshot(snapshotId: string): Promise<void> {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  if (!session?.user?.id) throw new Error("Unauthorized");
+  const userId = session.user.id;
+
+  // Verify ownership
+  const [existing] = await db.select().from(snapshots)
+    .where(and(eq(snapshots.id, snapshotId), eq(snapshots.userId, userId)));
+
+  if (!existing) {
+    throw new Error("Snapshot not found");
+  }
+
+  // Delete snapshot (cascade will delete items)
+  await db.delete(snapshots).where(eq(snapshots.id, snapshotId));
+
+  revalidatePath("/");
+}
+
+// Get comparison data between two snapshots
+export async function getComparisonData(
+  currentSnapshotId: string,
+  compareToSnapshotId: string
+): Promise<AssetChange[]> {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  if (!session?.user?.id) return [];
+
+  // Fetch current snapshot items
+  const currentItems = await db.select({
+    assetId: snapshotItems.assetAccountId,
+    name: assetAccounts.name,
+    category: assetAccounts.category,
+    value: snapshotItems.valuation
+  })
+    .from(snapshotItems)
+    .innerJoin(assetAccounts, eq(snapshotItems.assetAccountId, assetAccounts.id))
+    .where(eq(snapshotItems.snapshotId, currentSnapshotId));
+
+  // Fetch comparison snapshot items
+  const compareItems = await db.select({
+    assetId: snapshotItems.assetAccountId,
+    value: snapshotItems.valuation
+  })
+    .from(snapshotItems)
+    .where(eq(snapshotItems.snapshotId, compareToSnapshotId));
+
+  const compareMap = new Map(compareItems.map(i => [i.assetId, parseFloat(i.value || '0')]));
+  const currentAssetIds = new Set(currentItems.map(i => i.assetId));
+
+  // Calculate changes
+  const changes: AssetChange[] = currentItems.map(item => {
+    const curr = parseFloat(item.value || '0');
+    const prev = compareMap.get(item.assetId) || 0;
+    const diff = curr - prev;
+
+    let pct = 0;
+    if (prev !== 0) {
+      pct = (diff / prev) * 100;
+    } else if (curr !== 0) {
+      pct = 100;
+    }
+
+    return {
+      assetId: item.assetId,
+      name: item.name,
+      category: item.category,
+      currentValue: curr,
+      previousValue: prev,
+      changeValue: diff,
+      changePercentage: pct,
+      isNew: !compareMap.has(item.assetId),
+      isRemoved: false,
+    };
+  });
+
+  // Find removed assets (in compare but not in current)
+  for (const compareItem of compareItems) {
+    if (!currentAssetIds.has(compareItem.assetId)) {
+      // Fetch asset details
+      const [asset] = await db.select({
+        name: assetAccounts.name,
+        category: assetAccounts.category
+      }).from(assetAccounts).where(eq(assetAccounts.id, compareItem.assetId));
+
+      if (asset) {
+        const prev = parseFloat(compareItem.value || '0');
+        changes.push({
+          assetId: compareItem.assetId,
+          name: asset.name,
+          category: asset.category,
+          currentValue: 0,
+          previousValue: prev,
+          changeValue: -prev,
+          changePercentage: -100,
+          isNew: false,
+          isRemoved: true,
+        });
+      }
+    }
+  }
+
+  // Sort by absolute change value
+  return changes.sort((a, b) => Math.abs(b.changeValue) - Math.abs(a.changeValue));
+}
+
+// Get all snapshots for comparison selector
+export async function getSnapshotsForComparison(): Promise<Array<{ id: string; date: string; netWorth: number }>> {
+  const session = await auth.api.getSession({
+    headers: await headers()
+  });
+  if (!session?.user?.id) return [];
+
+  const history = await db.select({
+    id: snapshots.id,
+    snapDate: snapshots.snapDate,
+    totalNetWorth: snapshots.totalNetWorth
+  })
+    .from(snapshots)
+    .where(eq(snapshots.userId, session.user.id))
+    .orderBy(desc(snapshots.snapDate), desc(snapshots.createdAt));
+
+  return history.map(h => ({
+    id: h.id,
+    date: h.snapDate,
+    netWorth: parseFloat(h.totalNetWorth)
+  }));
 }

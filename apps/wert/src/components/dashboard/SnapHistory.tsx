@@ -6,14 +6,17 @@ import {
   DialogContent,
 } from "@/components/ui/dialog"
 import { getSnapshotDetails } from '@/app/actions/snapshot'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Pencil } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { SnapshotEditModal } from '@/components/snapshot/SnapshotEditModal'
 
 import { SnapOverview } from './SnapOverview'
 
-export function SnapHistory({ data }: { data: DashboardData }) {
+export function SnapHistory({ data, onRefresh }: { data: DashboardData; onRefresh?: () => void }) {
   const [selectedSnapshot, setSelectedSnapshot] = useState<SnapshotHistoryItem | null>(null);
   const [details, setDetails] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [editingSnapshotId, setEditingSnapshotId] = useState<string | null>(null);
 
   const handleSnapshotClick = async (snap: SnapshotHistoryItem) => {
     setSelectedSnapshot(snap);
@@ -110,15 +113,28 @@ export function SnapHistory({ data }: { data: DashboardData }) {
             {data.snapshots.map(snap => (
               <div
                 key={snap.id}
-                className="flex justify-between items-center p-4 bg-white rounded-2xl shadow-[0_4px_0_-2px_#C8CCD2] border border-slate-100 cursor-pointer active:scale-[0.98] transition-transform"
+                className="flex justify-between items-center p-4 bg-white rounded-2xl shadow-[0_4px_0_-2px_#C8CCD2] border border-slate-100 cursor-pointer active:scale-[0.98] transition-transform group"
                 onClick={() => handleSnapshotClick(snap)}
               >
                 <div className="flex flex-col gap-0.5">
                   <span className="font-bold text-slate-900">{snap.date}</span>
                   <span className="text-xs text-slate-400 font-medium line-clamp-1">{snap.note || "无备注"}</span>
                 </div>
-                <div className="font-bold text-slate-900 text-lg">
-                  {snap.totalNetWorthCny.toLocaleString()}
+                <div className="flex items-center gap-3">
+                  <div className="font-bold text-slate-900 text-lg">
+                    {snap.totalNetWorthCny.toLocaleString()}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingSnapshotId(snap.id);
+                    }}
+                  >
+                    <Pencil className="w-4 h-4 text-slate-400" />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -162,6 +178,17 @@ export function SnapHistory({ data }: { data: DashboardData }) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Snapshot Edit Modal */}
+      <SnapshotEditModal
+        snapshotId={editingSnapshotId}
+        open={!!editingSnapshotId}
+        onOpenChange={(open) => !open && setEditingSnapshotId(null)}
+        onSuccess={() => {
+          setEditingSnapshotId(null);
+          onRefresh?.();
+        }}
+      />
     </>
   )
 }

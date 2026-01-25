@@ -105,6 +105,7 @@ export const loggers = {
   cron: {
     syncAssets: createLogger('cron:sync-assets'),
     syncRates: createLogger('cron:sync-rates'),
+    syncPrices: createLogger('cron:sync-prices'),
   },
   currency: {
     index: createLogger('currency'),
