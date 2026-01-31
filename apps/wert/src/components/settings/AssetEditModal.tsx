@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { AutoConfigEditor } from '@/components/settings/AutoConfigEditor'
+import { SymbolSearchInput } from '@/components/settings/SymbolSearchInput'
 import { getAssetById, updateAsset, AssetAccount } from '@/app/actions/assets'
 import { AutoConfig, supportsAutoConfig } from '@/types/autoConfig'
 import { Loader2 } from 'lucide-react'
@@ -160,10 +161,22 @@ export function AssetEditModal({
                   <div className="grid gap-3">
                     <div className="grid gap-1.5">
                       <Label className="text-xs text-slate-600">代码</Label>
-                      <Input
+                      <SymbolSearchInput
                         value={symbol}
-                        onChange={(e) => setSymbol(e.target.value)}
-                        placeholder="股票/基金代码"
+                        onChange={setSymbol}
+                        onSelect={(result) => {
+                          if (result) {
+                            // 自动填充名称（如果当前名称为空）
+                            if (!name.trim()) {
+                              setName(result.name)
+                            }
+                            // 自动设置市场
+                            if (result.symbol.startsWith('sh') || result.symbol.startsWith('sz') || result.symbol.startsWith('bj') || result.symbol.endsWith('.OF')) {
+                              setMarket('CN')
+                            }
+                          }
+                        }}
+                        placeholder="输入代码或名称搜索"
                       />
                     </div>
 
