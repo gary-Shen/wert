@@ -150,22 +150,22 @@ export function SymbolSearchInput({
 
       {/* 搜索结果下拉框 */}
       {showDropdown && results.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-slate-800 border rounded-md shadow-lg max-h-60 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-popover border border-border rounded-md shadow-lg max-h-60 overflow-y-auto">
           {results.map((result) => (
             <button
               key={result.symbol}
               type="button"
-              className="w-full px-3 py-2 text-left hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-between"
+              className="w-full px-3 py-2 text-left hover:bg-accent flex items-center justify-between"
               onClick={() => handleSelect(result)}
             >
               <div>
-                <div className="font-medium text-sm">{result.name}</div>
+                <div className="font-medium text-sm text-foreground">{result.name}</div>
                 <div className="text-xs text-muted-foreground">
                   {result.symbol}
                   {result.englishName && ` · ${result.englishName}`}
                 </div>
               </div>
-              <span className="text-xs px-1.5 py-0.5 bg-slate-200 dark:bg-slate-600 rounded">
+              <span className="text-xs px-1.5 py-0.5 bg-muted text-muted-foreground rounded">
                 {result.assetType}
               </span>
             </button>
@@ -175,7 +175,7 @@ export function SymbolSearchInput({
 
       {/* 价格显示 */}
       {(price || isPriceLoading) && (
-        <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded text-sm">
+        <div className="mt-2 p-2 bg-primary/10 rounded text-sm">
           {isPriceLoading ? (
             <span className="text-muted-foreground flex items-center gap-1">
               <Loader2 className="h-3 w-3 animate-spin" />
@@ -183,7 +183,7 @@ export function SymbolSearchInput({
             </span>
           ) : price ? (
             <div className="flex items-center justify-between">
-              <span className="text-blue-700 dark:text-blue-300">
+              <span className="text-primary">
                 当前价格: <span className="font-semibold">{price.currency} {price.price.toFixed(2)}</span>
               </span>
               <span className="text-xs text-muted-foreground">

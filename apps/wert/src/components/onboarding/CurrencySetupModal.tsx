@@ -51,7 +51,7 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
   const selectedCurrencyInfo = AVAILABLE_CURRENCIES.find((c) => c.code === selectedCurrency)
 
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
+    <Dialog open={open} onOpenChange={() => { }}>
       <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -60,7 +60,7 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
           </DialogTitle>
           <DialogDescription>
             基准货币用于统一计算您的总资产净值。
-            <span className="text-amber-600 font-medium block mt-1">
+            <span className="text-amber-600 dark:text-amber-400 font-medium block mt-1">
               注意：此设置完成后不可更改
             </span>
           </DialogDescription>
@@ -68,19 +68,19 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
 
         <div className="py-4">
           {/* Region Detection Info */}
-          <div className="mb-4 p-3 bg-slate-50 rounded-lg text-sm">
-            <div className="flex items-center gap-2 text-slate-600">
+          <div className="mb-4 p-3 bg-muted rounded-lg text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground">
               <span>检测到您的地区:</span>
-              <span className="font-medium text-slate-900">
+              <span className="font-medium text-foreground">
                 {geoResult.region === 'CN' ? '中国大陆' : '海外'}
               </span>
               {geoResult.confidence === 'high' && (
-                <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300 px-1.5 py-0.5 rounded">
                   高置信度
                 </span>
               )}
             </div>
-            <div className="text-xs text-slate-500 mt-1">
+            <div className="text-xs text-muted-foreground mt-1">
               推荐货币: {geoResult.suggestedCurrency}
             </div>
           </div>
@@ -99,14 +99,14 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
                     'relative flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left',
                     isSelected
                       ? 'border-primary bg-primary/5'
-                      : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                      : 'border-border hover:border-primary/30 hover:bg-accent'
                   )}
                 >
                   {/* Currency Symbol */}
                   <div
                     className={cn(
                       'w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold',
-                      isSelected ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600'
+                      isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                     )}
                   >
                     {currency.symbol}
@@ -114,8 +114,8 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
 
                   {/* Currency Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-slate-900">{currency.code}</div>
-                    <div className="text-xs text-slate-500 truncate">{currency.name}</div>
+                    <div className="font-medium text-foreground">{currency.code}</div>
+                    <div className="text-xs text-muted-foreground truncate">{currency.name}</div>
                   </div>
 
                   {/* Selection Check */}
@@ -125,7 +125,7 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
 
                   {/* Recommended Badge */}
                   {isRecommended && !isSelected && (
-                    <span className="absolute -top-1 -right-1 text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full">
+                    <span className="absolute -top-1 -right-1 text-[10px] bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300 px-1.5 py-0.5 rounded-full">
                       推荐
                     </span>
                   )}
@@ -148,7 +148,7 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
               </>
             )}
           </Button>
-          <p className="text-xs text-center text-slate-400">
+          <p className="text-xs text-center text-muted-foreground">
             所有资产价值将以 {selectedCurrency} 为单位进行汇总
           </p>
         </DialogFooter>

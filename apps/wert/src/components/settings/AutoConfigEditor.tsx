@@ -85,22 +85,22 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
     const depConfig = isDepreciatingConfig(config)
       ? config
       : ({
-          type: 'depreciation',
-          purchasePrice: 0,
-          purchaseDate: '',
-          lifespanMonths: getDefaultLifespan(category),
-          salvageValue: 0,
-        } as DepreciatingAssetConfig)
+        type: 'depreciation',
+        purchasePrice: 0,
+        purchaseDate: '',
+        lifespanMonths: getDefaultLifespan(category),
+        salvageValue: 0,
+      } as DepreciatingAssetConfig)
 
     return (
-      <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
-        <div className="text-sm font-medium text-slate-700 border-b pb-2">
+      <div className="space-y-4 p-4 bg-muted rounded-lg">
+        <div className="text-sm font-medium text-foreground border-b border-border pb-2">
           自动折旧配置
         </div>
 
         <div className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">购买价格</Label>
+            <Label className="text-xs text-muted-foreground">购买价格</Label>
             <Input
               type="number"
               value={depConfig.purchasePrice || ''}
@@ -112,7 +112,7 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">购买日期</Label>
+            <Label className="text-xs text-muted-foreground">购买日期</Label>
             <Input
               type="date"
               value={depConfig.purchaseDate || ''}
@@ -121,9 +121,9 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">
+            <Label className="text-xs text-muted-foreground">
               折旧年限 (月)
-              <span className="text-slate-400 ml-1">
+              <span className="opacity-60 ml-1">
                 默认: {getDefaultLifespan(category)}
               </span>
             </Label>
@@ -138,7 +138,7 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">残值 (可选)</Label>
+            <Label className="text-xs text-muted-foreground">残值 (可选)</Label>
             <Input
               type="number"
               value={depConfig.salvageValue || ''}
@@ -151,9 +151,9 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
         </div>
 
         {previewValue !== null && (
-          <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
-            <div className="text-xs text-slate-500 mb-1">当前计算价值</div>
-            <div className="text-lg font-bold text-slate-900">
+          <div className="mt-3 p-3 bg-card rounded-lg border border-border">
+            <div className="text-xs text-muted-foreground mb-1">当前计算价值</div>
+            <div className="text-lg font-bold text-foreground">
               {previewValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </div>
           </div>
@@ -166,21 +166,21 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
     const loanConfig = isLiabilityConfig(config)
       ? config
       : ({
-          type: 'amortization',
-          initialLoan: 0,
-          monthlyPayment: 0,
-          repaymentDate: '',
-        } as LiabilityConfig)
+        type: 'amortization',
+        initialLoan: 0,
+        monthlyPayment: 0,
+        repaymentDate: '',
+      } as LiabilityConfig)
 
     return (
-      <div className="space-y-4 p-4 bg-slate-50 rounded-lg">
-        <div className="text-sm font-medium text-slate-700 border-b pb-2">
+      <div className="space-y-4 p-4 bg-muted rounded-lg">
+        <div className="text-sm font-medium text-foreground border-b border-border pb-2">
           贷款摊销配置
         </div>
 
         <div className="grid gap-3">
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">初始贷款金额</Label>
+            <Label className="text-xs text-muted-foreground">初始贷款金额</Label>
             <Input
               type="number"
               value={loanConfig.initialLoan || ''}
@@ -192,7 +192,7 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">月供金额</Label>
+            <Label className="text-xs text-muted-foreground">月供金额</Label>
             <Input
               type="number"
               value={loanConfig.monthlyPayment || ''}
@@ -204,7 +204,7 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
           </div>
 
           <div className="grid gap-1.5">
-            <Label className="text-xs text-slate-600">还款起始日期</Label>
+            <Label className="text-xs text-muted-foreground">还款起始日期</Label>
             <Input
               type="date"
               value={loanConfig.repaymentDate || ''}
@@ -214,9 +214,9 @@ export function AutoConfigEditor({ category, config, onChange }: AutoConfigEdito
         </div>
 
         {previewValue !== null && (
-          <div className="mt-3 p-3 bg-white rounded-lg border border-slate-200">
-            <div className="text-xs text-slate-500 mb-1">当前剩余本金</div>
-            <div className="text-lg font-bold text-slate-900">
+          <div className="mt-3 p-3 bg-card rounded-lg border border-border">
+            <div className="text-xs text-muted-foreground mb-1">当前剩余本金</div>
+            <div className="text-lg font-bold text-foreground">
               {previewValue.toLocaleString(undefined, { maximumFractionDigits: 2 })}
             </div>
           </div>

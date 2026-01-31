@@ -1,27 +1,28 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { HandCoins } from "lucide-react"
+import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import { Settings } from "lucide-react"
 import { useState } from "react"
-import { SettingsModal } from "./SettingsModal"
+import { SettingsPopover } from "./SettingsPopover"
 
 export function SettingsButton() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <>
-      <div className="fixed bottom-8 left-8 z-50">
-        <Button
-          size="icon"
-          variant="outline"
-          className="h-16 w-16 rounded-full shadow-2xl bg-background hover:scale-105 transition-transform border-muted-foreground/20"
-          onClick={() => setIsOpen(true)}
-        >
-          <HandCoins className="h-8 w-8 text-foreground" />
-        </Button>
-      </div>
-
-      <SettingsModal key={isOpen ? 'open' : 'closed'} open={isOpen} onOpenChange={setIsOpen} />
-    </>
+    <div className="fixed top-6 right-6 z-50">
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            size="icon"
+            variant="outline"
+            className="h-10 w-10 rounded-full shadow-lg bg-background/80 backdrop-blur-sm hover:scale-105 transition-transform border-muted-foreground/20"
+          >
+            <Settings className="h-5 w-5 text-foreground" />
+          </Button>
+        </PopoverTrigger>
+        <SettingsPopover onClose={() => setIsOpen(false)} />
+      </Popover>
+    </div>
   )
 }

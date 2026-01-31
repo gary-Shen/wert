@@ -138,18 +138,17 @@ export function SnapPieChart({ data }: { data: ChartData[] }) {
                 const data = payload[0].payload;
                 if (data.isGroup) {
                   return (
-                    // box-shadow: 0 6px 0 0px #1e293b5c;
-                    <div className="bg-slate-900 text-white p-3 border border-slate-700 rounded-xl shadow-[0_4px_0_-2px_#1e293b5c] text-xs max-w-[200px]">
-                      <div className="font-bold mb-2 border-b border-slate-700 pb-2 text-slate-300">{data.category ? `${getCategoryLabel(data.category)}` : ''}</div>
+                    <div className="bg-popover text-popover-foreground p-3 border border-border rounded-xl shadow-lg text-xs max-w-[200px]">
+                      <div className="font-bold mb-2 border-b border-border pb-2 text-muted-foreground">{data.category ? `${getCategoryLabel(data.category)}` : ''}</div>
                       <div className="max-h-[150px] overflow-y-auto space-y-1">
                         {data.originalAssets.map((a: any, i: number) => (
                           <div key={i} className="flex justify-between gap-4">
-                            <span className="truncate max-w-[100px] text-slate-400">{a.name}</span>
+                            <span className="truncate max-w-[100px] text-muted-foreground">{a.name}</span>
                             <span className="font-mono">{a.value.toLocaleString()}</span>
                           </div>
                         ))}
                       </div>
-                      <div className="border-t border-slate-700 mt-2 pt-2 font-mono text-right font-bold text-white">
+                      <div className="border-t border-border mt-2 pt-2 font-mono text-right font-bold">
                         总计: {data.value.toLocaleString()}
                       </div>
                     </div>
@@ -161,14 +160,14 @@ export function SnapPieChart({ data }: { data: ChartData[] }) {
                 const isZero = pct === 0;
 
                 return (
-                  <div className="flex flex-col gap-1 bg-slate-900 text-white p-3 border border-slate-700 shadow-[0_4px_0_-2px_#1e293b5c] rounded-xl min-w-[200px]">
-                    <div className="text-sm font-medium text-slate-400">{getCategoryLabel(data.name)}</div>
+                  <div className="flex flex-col gap-1 bg-popover text-popover-foreground p-3 border border-border shadow-lg rounded-xl min-w-[200px]">
+                    <div className="text-sm font-medium text-muted-foreground">{getCategoryLabel(data.name)}</div>
                     <div className="text-xl font-bold tracking-tight">
                       {data.value.toLocaleString()}
                     </div>
                     {!isZero && (
                       <div className={`text-sm font-medium ${isPositive ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {isPositive ? '+' : ''}{pct.toFixed(2)}% <span className="text-slate-500 font-normal">Change</span>
+                        {isPositive ? '+' : ''}{pct.toFixed(2)}% <span className="text-muted-foreground font-normal">Change</span>
                       </div>
                     )}
                   </div>

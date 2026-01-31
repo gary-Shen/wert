@@ -54,15 +54,15 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
     <div className={cn("max-w-md mx-auto min-h-full w-full flex flex-col items-center justify-start py-6 px-4 gap-6 font-sans", className)}>
 
       {/* Net Worth Card */}
-      <div className="w-full bg-[#1e293b] rounded-3xl p-6 text-white shadow-[0_8px_0_-4px_#C8CCD2] relative overflow-hidden">
+      <div className="w-full bg-primary rounded-3xl p-6 text-primary-foreground shadow-lg relative overflow-hidden">
         {/* Background Gradient/Effect could go here */}
 
         <div className="space-y-1 mb-6">
           <div className="flex items-center gap-2">
-            <h3 className="text-xs font-medium text-slate-400 uppercase tracking-wide">净资产 ({data.currency})</h3>
+            <h3 className="text-xs font-medium opacity-70 uppercase tracking-wide">净资产 ({data.currency})</h3>
             <button
               onClick={togglePrivacy}
-              className="text-slate-400 hover:text-white transition-colors p-0.5 rounded focus:outline-none focus:ring-1 focus:ring-slate-500"
+              className="opacity-70 hover:opacity-100 transition-opacity p-0.5 rounded focus:outline-none focus:ring-1 focus:ring-primary-foreground/50"
               title={showAmount ? "Hide Amounts" : "Show Amounts"}
             >
               {showAmount ? <Eye size={14} /> : <EyeOff size={14} />}
@@ -74,9 +74,9 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full h-3 bg-slate-700/50 rounded-full mb-2 overflow-hidden flex">
+        <div className="w-full h-3 bg-primary-foreground/20 rounded-full mb-2 overflow-hidden flex">
           <div
-            className="h-full bg-emerald-500"
+            className="h-full bg-emerald-400"
             style={{ width: `${progressPercent}%` }}
           />
           {/* Liabilities space is effectively the empty space or we could make it red explicit */}
@@ -85,11 +85,11 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
         {/* Assets / Liabilities Row */}
         <div className="flex justify-between items-center text-sm">
           <div>
-            <div className="text-xs text-slate-400 mb-0.5">资产</div>
+            <div className="text-xs opacity-70 mb-0.5">资产</div>
             <div className="text-emerald-400 font-medium">{showAmount ? `+${assetsVal.toLocaleString()}` : '****'}</div>
           </div>
           <div className="text-right">
-            <div className="text-xs text-slate-400 mb-0.5">负债</div>
+            <div className="text-xs opacity-70 mb-0.5">负债</div>
             <div className="text-red-400 font-medium">{showAmount ? `-${liabilitiesVal.toLocaleString()}` : '****'}</div>
           </div>
         </div>
@@ -97,7 +97,7 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
 
       {/* Allocation Section */}
       <div className="w-full">
-        <h2 className="text-lg font-bold text-slate-900 mb-4">资产配置</h2>
+        <h2 className="text-lg font-bold text-foreground mb-4">资产配置</h2>
 
         {/* Chart */}
         <div className="w-full mb-6 flex justify-center">
@@ -106,10 +106,10 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
 
         {/* Asset List */}
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-md font-bold text-slate-900">资产明细</h3>
+          <h3 className="text-md font-bold text-foreground">资产明细</h3>
           <button
             onClick={toggleSort}
-            className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
             title={sortOrder === 'desc' ? "Switch to Low-to-High" : "Switch to High-to-Low"}
           >
             {sortOrder === 'desc' ? <ArrowDownWideNarrow size={18} /> : <ArrowDownNarrowWide size={18} />}
@@ -129,19 +129,19 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
             const iconStyle = { color: colorStr };
 
             return (
-              <div key={item.name} className="flex items-center justify-between p-4 bg-white rounded-2xl shadow-[0_8px_0_-4px_#c8ccd27a] border border-slate-100">
+              <div key={item.name} className="flex items-center justify-between p-4 bg-card rounded-2xl shadow-sm border border-border">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={bgStyle}>
                     {/* Icon */}
                     <CategoryIcon className="w-5 h-5" style={iconStyle} />
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-bold text-slate-900">{item.name}</span>
-                    <span className="text-xs text-slate-400 font-medium">占比 {percent}%</span>
+                    <span className="font-bold text-foreground">{item.name}</span>
+                    <span className="text-xs text-muted-foreground font-medium">占比 {percent}%</span>
                   </div>
                 </div>
 
-                <div className="font-bold text-slate-900">
+                <div className="font-bold text-foreground">
                   {/* Use 'compact' notation if possible or just LocaleString */}
                   {showAmount ? Intl.NumberFormat('en', { maximumFractionDigits: 1 }).format(item.value) : '****'}
                 </div>

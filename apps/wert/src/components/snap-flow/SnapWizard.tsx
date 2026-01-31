@@ -80,9 +80,14 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
 
           {step === "REVIEW" && (
             <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <Label>日期</Label>
-                <Input type="date" value={date} onChange={e => setDate(e.target.value)} />
+              <div className="flex items-center gap-4">
+                <Label className="shrink-0">日期</Label>
+                <Input
+                  type="date"
+                  value={date}
+                  onChange={e => setDate(e.target.value)}
+                  className="flex-1"
+                />
               </div>
 
               <div className="space-y-4">

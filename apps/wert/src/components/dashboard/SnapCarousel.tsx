@@ -14,7 +14,7 @@ export function SnapCarousel({ data }: { data: DashboardData }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, startIndex: 1 }) // Start in Center
 
   return (
-    <div className="h-full w-full relative bg-slate-100 text-foreground overflow-hidden flex flex-col">
+    <div className="h-full w-full relative bg-background text-foreground overflow-hidden flex flex-col">
       {/* Helper Navigation Hints (Desktop) */}
       <div className="hidden md:flex justify-between p-4 absolute top-0 w-full z-10 pointer-events-none">
         <Button variant="ghost" className="pointer-events-auto" onClick={() => emblaApi?.scrollPrev()}>

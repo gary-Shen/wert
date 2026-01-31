@@ -135,3 +135,29 @@ export async function updateUserLocale(
   revalidatePath("/")
   return { success: true }
 }
+
+/**
+ * Update user settings (base currency, etc.)
+ */
+export async function updateUserSettings(
+  settings: { baseCurrency?: string }
+): Promise<{ success: boolean; error?: string }> {
+  const userId = await getAuthUser()
+
+  const updateData: Record<string, unknown> = {
+    updatedAt: new Date(),
+  }
+
+  if (settings.baseCurrency) {
+    updateData.baseCurrency = settings.baseCurrency
+  }
+
+  await db
+    .update(user)
+    .set(updateData)
+    .where(eq(user.id, userId))
+
+  revalidatePath("/")
+  return { success: true }
+}
+
