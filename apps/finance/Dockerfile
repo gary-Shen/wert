@@ -11,8 +11,9 @@ COPY pyproject.toml pdm.lock* ./
 # Install dependencies (production only, no lock file generation)
 RUN pdm install --prod --no-lock --no-self
 
-# Copy application code
-COPY main.py ./
+# Copy all application code
+COPY main.py cache_manager.py models.py ./
+COPY data_sources/ ./data_sources/
 
 # Expose port
 EXPOSE 8001
