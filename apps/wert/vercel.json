@@ -6,7 +6,11 @@
     },
     {
       "path": "/api/cron/sync-rates",
-      "schedule": "0 * * * *"
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/sync-prices",
+      "schedule": "0 16 * * *"
     }
   ]
 }
