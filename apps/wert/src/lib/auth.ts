@@ -7,6 +7,10 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg", // or "postgres"
   }),
+  logger: {
+    level: "debug",
+    disabled: false,
+  },
   socialProviders: {
     github: {
       clientId: process.env.GITHUB_CLIENT_ID!,
