@@ -15,8 +15,9 @@ RUN pdm install --prod --no-lock --no-self
 COPY main.py cache_manager.py models.py ./
 COPY data_sources/ ./data_sources/
 
-# Expose port
+# Railway uses PORT environment variable
+ENV PORT=8001
 EXPOSE 8001
 
-# Run the application
-CMD ["pdm", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+# Run the application using Railway's PORT
+CMD pdm run uvicorn main:app --host 0.0.0.0 --port ${PORT:-8001}
