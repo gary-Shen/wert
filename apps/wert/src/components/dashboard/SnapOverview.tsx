@@ -54,7 +54,7 @@ export function SnapOverview({ data, className }: { data: DashboardData; classNa
     <div className={cn("max-w-md mx-auto min-h-full w-full flex flex-col items-center justify-start py-6 px-4 gap-6 font-sans", className)}>
 
       {/* Net Worth Card */}
-      <div className="w-full bg-primary rounded-3xl p-6 text-primary-foreground shadow-lg relative overflow-hidden">
+      <div className="w-full bg-[#1e293b] rounded-3xl p-6 text-white shadow-lg relative overflow-hidden">
         {/* Background Gradient/Effect could go here */}
 
         <div className="space-y-1 mb-6">

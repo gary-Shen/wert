@@ -29,14 +29,14 @@ function MenuItem({ icon, label, description, onClick, highlighted }: MenuItemPr
     >
       <div className={cn(
         "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-        highlighted ? "bg-primary text-primary-foreground" : "bg-muted"
+        highlighted ? "bg-[#1e293b] text-white" : "bg-muted text-muted-foreground"
       )}>
         {icon}
       </div>
       <div className="flex-1 min-w-0">
         <div className={cn(
-          "font-medium",
-          highlighted && "text-primary"
+          "font-medium text-foreground",
+          highlighted && "font-semibold"
         )}>
           {label}
         </div>
