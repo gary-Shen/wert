@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { db } from '@/db';
 import { assetPrices } from '@/db/schema';
 import { sql, eq, and, desc } from 'drizzle-orm';
 import { priceService } from '@/lib/services/price';
 import { loggers } from '@/lib/logger';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +62,12 @@ function needsRefresh(priceDate: string, symbol: string): boolean {
  * 4. 立即返回已有数据
  */
 export async function GET(request: NextRequest) {
+  // 鉴权：检查用户登录状态
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const symbolsParam = request.nextUrl.searchParams.get('symbols');
 
   if (!symbolsParam) {

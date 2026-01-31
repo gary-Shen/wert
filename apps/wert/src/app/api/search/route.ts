@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { headers } from 'next/headers';
 import { db } from '@/db';
 import { assetDimensions } from '@/db/schema';
 import { sql, ilike, or } from 'drizzle-orm';
 import { loggers } from '@/lib/logger';
+import { auth } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +21,12 @@ const log = loggers.price;
  * - 拼音搜索: maotai, mt, gzmt
  */
 export async function GET(request: NextRequest) {
+  // 鉴权：检查用户登录状态
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const query = request.nextUrl.searchParams.get('q');
   const limitParam = request.nextUrl.searchParams.get('limit');
 
