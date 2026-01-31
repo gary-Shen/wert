@@ -1,4 +1,5 @@
 {
+  "buildCommand": "bun run db:push && bun run build",
   "crons": [
     {
       "path": "/api/cron/sync-assets",
