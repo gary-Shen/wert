@@ -1,89 +1,86 @@
-import { priceService } from "@/lib/services/price";
+/**
+ * 资产同步 Worker
+ *
+ * 基于 Market Provider 架构，统一管理所有市场的数据同步。
+ *
+ * 架构优势：
+ * 1. 统一接口 - 所有市场使用相同的同步逻辑
+ * 2. 可扩展 - 新增市场只需注册 Provider
+ * 3. 可配置 - 每个市场独立配置
+ */
+
 import { loggers } from "@/lib/logger";
 import { db } from "../db";
 import { assetPrices, assetAccounts, assetDimensions } from "../db/schema";
 import { sql, isNotNull } from "drizzle-orm";
+import {
+  marketRegistry,
+  fetchPrice,
+  type AssetDimension,
+  type SyncResult,
+} from "@/lib/markets";
 
 const log = loggers.sync;
 
-// 环境变量校验
-function validateEnvVars(): { sidecarUrl: string; apiKey: string } {
-  const sidecarUrl = process.env.DATA_SIDECAR_URL;
-  const apiKey = process.env.INTERNAL_API_KEY;
+// ============================================================================
+// 通用工具函数
+// ============================================================================
 
-  if (!sidecarUrl) {
-    throw new Error("Missing required environment variable: DATA_SIDECAR_URL");
-  }
-  if (!apiKey) {
-    throw new Error("Missing required environment variable: INTERNAL_API_KEY");
-  }
+/**
+ * 批量插入资产字典到数据库
+ */
+async function batchInsertDimensions(
+  dimensions: AssetDimension[],
+  batchSize: number = 500
+): Promise<number> {
+  let batchCount = 0;
 
-  return { sidecarUrl, apiKey };
-}
+  for (let i = 0; i < dimensions.length; i += batchSize) {
+    const chunk = dimensions.slice(i, i + batchSize);
 
-// 带超时的 fetch 封装
-async function fetchWithTimeout(
-  url: string,
-  options: RequestInit = {},
-  timeoutMs: number = 30000
-): Promise<Response> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-
-  try {
-    const response = await fetch(url, {
-      ...options,
-      signal: controller.signal,
-    });
-    return response;
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Request timeout after ${timeoutMs}ms`);
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
-// 指数退避重试
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  options: { maxRetries?: number; baseDelayMs?: number; maxDelayMs?: number } = {}
-): Promise<T> {
-  const { maxRetries = 3, baseDelayMs = 1000, maxDelayMs = 10000 } = options;
-
-  let lastError: Error | undefined;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
-
-      if (attempt === maxRetries) break;
-
-      // 指数退避 + 抖动
-      const delay = Math.min(
-        baseDelayMs * Math.pow(2, attempt) + Math.random() * 1000,
-        maxDelayMs
-      );
-
-      log.warn("Retry attempt", {
-        attempt: attempt + 1,
-        maxRetries,
-        delay_ms: Math.round(delay),
-        error: lastError.message,
+    await db
+      .insert(assetDimensions)
+      .values(
+        chunk.map((item) => ({
+          symbol: item.symbol,
+          assetType: item.assetType === "ETF" ? "FUND" : item.assetType,
+          cnName: item.cnName,
+          name: item.name || null,
+          pinyin: null,
+          pinyinAbbr: item.pinyinAbbr || item.symbol.split(".")[0],
+          isActive: true,
+        }))
+      )
+      .onConflictDoUpdate({
+        target: [assetDimensions.symbol],
+        set: {
+          cnName: sql`excluded."cnName"`,
+          name: sql`excluded."name"`,
+          pinyinAbbr: sql`excluded."pinyinAbbr"`,
+          assetType: sql`excluded."assetType"`,
+          isActive: true,
+        },
       });
 
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
+    batchCount++;
   }
 
-  throw lastError;
+  return batchCount;
 }
 
-export const syncPriceWorker = async (): Promise<{ total: number; success: number; failed: number; skipped: number }> => {
+// ============================================================================
+// 价格同步
+// ============================================================================
+
+/**
+ * 同步用户持仓的资产价格
+ *
+ * 流程：
+ * 1. 查询所有活跃持仓的 symbol
+ * 2. 通过 Market Registry 自动路由到对应 Provider
+ * 3. 批量更新价格缓存
+ */
+export async function syncPriceWorker(): Promise<SyncResult> {
   // 1. 获取所有活跃持仓的 unique symbol
   const activeAssets = await db
     .selectDistinct({ symbol: assetAccounts.symbol })
@@ -103,7 +100,8 @@ export const syncPriceWorker = async (): Promise<{ total: number; success: numbe
     }
 
     try {
-      const data = await priceService.fetchAsset(symbol);
+      // 使用 Market Registry 自动路由
+      const data = await fetchPrice(symbol);
 
       if (!data) {
         log.warn("Skipped asset: no data returned", { symbol });
@@ -111,25 +109,27 @@ export const syncPriceWorker = async (): Promise<{ total: number; success: numbe
         continue;
       }
 
-      // 3. 执行 Upsert 落盘
-      await db.insert(assetPrices).values({
-        symbol: data.symbol, // 使用返回的标准 symbol
-        assetType: data.symbol.includes('.OF') ? 'FUND' : 'STOCK', // Heuristic for now
-        price: data.price.toString(),
-        currency: data.currency || 'CNY',
-        priceDate: data.date.toISOString().split('T')[0],
-        source: data.source
-      }).onConflictDoUpdate({
-        target: [assetPrices.symbol, assetPrices.priceDate],
-        set: {
+      // Upsert 到价格缓存
+      await db
+        .insert(assetPrices)
+        .values({
+          symbol: data.symbol,
+          assetType: data.symbol.includes(".OF") ? "FUND" : "STOCK",
           price: data.price.toString(),
-          updatedAt: new Date()
-        }
-      });
+          currency: data.currency || "CNY",
+          priceDate: data.priceDate.toISOString().split("T")[0],
+          source: data.source,
+        })
+        .onConflictDoUpdate({
+          target: [assetPrices.symbol, assetPrices.priceDate],
+          set: {
+            price: data.price.toString(),
+            updatedAt: new Date(),
+          },
+        });
 
       success++;
       log.debug("Price synced", { symbol, price: data.price });
-
     } catch (err) {
       log.error("Asset sync failed", { symbol, error: String(err) });
       failed++;
@@ -140,82 +140,204 @@ export const syncPriceWorker = async (): Promise<{ total: number; success: numbe
     total: activeAssets.length,
     success,
     failed,
-    skipped
+    skipped,
   };
-};
+}
+
+// ============================================================================
+// 资产字典同步 - 单个市场
+// ============================================================================
 
 /**
- * 同步资产字典 (每周一次)
- * 从 Python Sidecar 拉取全量 A 股和基金数据，存入 Postgres
+ * 同步指定市场的资产字典
  *
- * @throws Error 当同步失败时抛出错误
+ * @param marketId 市场 ID: "CN", "US", "HK" 等
+ * @param options 配置选项
  */
-export const syncAssetDimensions = async (): Promise<{ total: number; batches: number }> => {
-  // 1. 校验环境变量
-  const { sidecarUrl, apiKey } = validateEnvVars();
+export async function syncMarketDimensions(
+  marketId: string,
+  options?: { minMarketCap?: number }
+): Promise<SyncResult & { batches: number }> {
+  const provider = marketRegistry.get(marketId);
 
-  log.info("Starting asset dimensions sync");
-
-  // 2. 带超时和重试的 fetch
-  const data = await withRetry(
-    async () => {
-      const res = await fetchWithTimeout(
-        `${sidecarUrl}/api/v1/dim`,
-        { headers: { "X-API-Key": apiKey } },
-        30000 // 30s 超时
-      );
-
-      if (!res.ok) {
-        throw new Error(`Failed to fetch dimensions: ${res.status} ${res.statusText}`);
-      }
-
-      return res.json();
-    },
-    { maxRetries: 3, baseDelayMs: 2000 }
-  );
-
-  if (!Array.isArray(data)) {
-    throw new Error(`Invalid response format: expected array, got ${typeof data}`);
+  if (!provider) {
+    throw new Error(`Unknown market: ${marketId}`);
   }
 
-  if (data.length === 0) {
-    log.warn("No data received for dimensions");
-    return { total: 0, batches: 0 };
-  }
+  const config = {
+    ...marketRegistry.getConfig(marketId),
+    ...options,
+  };
 
-  log.info("Fetched dimension records", { count: data.length });
+  log.info("Starting market dimensions sync", { market: marketId, config });
 
-  // 3. 批量插入
-  const BATCH_SIZE = 1000;
-  let batchCount = 0;
+  const startTime = Date.now();
 
-  for (let i = 0; i < data.length; i += BATCH_SIZE) {
-    const chunk = data.slice(i, i + BATCH_SIZE);
+  try {
+    // 从 Provider 获取数据
+    const dimensions = await provider.fetchDimensions(config);
 
-    await db.insert(assetDimensions).values(
-      chunk.map((item: any) => ({
-        symbol: item.symbol,
-        assetType: item.assetType,
-        cnName: item.name,
-        pinyin: item.pinyin,
-        pinyinAbbr: item.pinyinAbbr,
-        isActive: true
-      }))
-    ).onConflictDoUpdate({
-      target: [assetDimensions.symbol],
-      set: {
-        cnName: sql`excluded."cnName"`,
-        pinyin: sql`excluded."pinyin"`,
-        pinyinAbbr: sql`excluded."pinyinAbbr"`,
-        assetType: sql`excluded."assetType"`,
-        isActive: true
-      }
+    if (dimensions.length === 0) {
+      log.warn("No dimensions returned", { market: marketId });
+      return {
+        total: 0,
+        success: 0,
+        failed: 0,
+        batches: 0,
+        duration: Date.now() - startTime,
+      };
+    }
+
+    // 批量插入数据库
+    const batches = await batchInsertDimensions(dimensions);
+
+    log.info("Market dimensions sync completed", {
+      market: marketId,
+      total: dimensions.length,
+      batches,
+      duration: Date.now() - startTime,
     });
 
-    batchCount++;
+    return {
+      total: dimensions.length,
+      success: dimensions.length,
+      failed: 0,
+      batches,
+      duration: Date.now() - startTime,
+    };
+  } catch (error) {
+    log.error("Market dimensions sync failed", {
+      market: marketId,
+      error: String(error),
+    });
+    throw error;
   }
+}
 
-  log.info("Asset dimensions sync completed", { total: data.length, batches: batchCount });
+// ============================================================================
+// 资产字典同步 - 兼容旧 API
+// ============================================================================
 
-  return { total: data.length, batches: batchCount };
-};
+/**
+ * 同步中国 A 股/基金资产字典
+ * @deprecated 使用 syncMarketDimensions("CN") 替代
+ */
+export async function syncAssetDimensions(): Promise<{
+  total: number;
+  batches: number;
+}> {
+  const result = await syncMarketDimensions("CN");
+  return { total: result.total, batches: result.batches };
+}
+
+/**
+ * 同步美股/ETF 资产字典
+ * @deprecated 使用 syncMarketDimensions("US", { minMarketCap }) 替代
+ */
+export async function syncOverseasAssetDimensions(
+  minMarketCap: number = 1_000_000_000
+): Promise<{
+  total: number;
+  filtered: number;
+  batches: number;
+}> {
+  const result = await syncMarketDimensions("US", { minMarketCap });
+  return {
+    total: result.total,
+    filtered: result.success, // 筛选后数量
+    batches: result.batches,
+  };
+}
+
+/**
+ * 同步港股资产字典
+ * @deprecated 使用 syncMarketDimensions("HK") 替代
+ */
+export async function syncHKAssetDimensions(): Promise<{
+  total: number;
+  batches: number;
+}> {
+  const result = await syncMarketDimensions("HK");
+  return { total: result.total, batches: result.batches };
+}
+
+// ============================================================================
+// 资产字典同步 - 全量
+// ============================================================================
+
+/**
+ * 同步所有市场的资产字典
+ *
+ * @param options 配置选项
+ */
+export async function syncAllAssetDimensions(
+  options?: { minMarketCap?: number }
+): Promise<Record<string, SyncResult & { batches: number }>> {
+  const minMarketCap = options?.minMarketCap ?? 1_000_000_000;
+
+  log.info("Starting full asset dimensions sync", { minMarketCap });
+
+  const enabledProviders = marketRegistry.getEnabled();
+  const results: Record<string, SyncResult & { batches: number }> = {};
+
+  // 并行同步所有市场
+  const syncTasks = enabledProviders.map(async (provider) => {
+    try {
+      const result = await syncMarketDimensions(provider.id, {
+        minMarketCap: provider.id === "US" ? minMarketCap : undefined,
+      });
+      results[provider.id.toLowerCase()] = result;
+    } catch (error) {
+      log.error("Market sync failed", {
+        market: provider.id,
+        error: String(error),
+      });
+      results[provider.id.toLowerCase()] = {
+        total: 0,
+        success: 0,
+        failed: 1,
+        batches: 0,
+      };
+    }
+  });
+
+  await Promise.all(syncTasks);
+
+  log.info("Full asset dimensions sync completed", { results });
+
+  return results;
+}
+
+// ============================================================================
+// 新 API - 推荐使用
+// ============================================================================
+
+/**
+ * 获取所有已注册的市场
+ */
+export function getRegisteredMarkets() {
+  return marketRegistry.getAll().map((p) => ({
+    id: p.id,
+    name: p.name,
+    suffix: p.symbolSuffix,
+    currency: p.defaultCurrency,
+    enabled: marketRegistry.getConfig(p.id).enabled,
+  }));
+}
+
+/**
+ * 启用/禁用市场
+ */
+export function setMarketEnabled(marketId: string, enabled: boolean) {
+  marketRegistry.updateConfig(marketId, { enabled });
+}
+
+/**
+ * 更新市场配置
+ */
+export function updateMarketConfig(
+  marketId: string,
+  config: { minMarketCap?: number; enabled?: boolean }
+) {
+  marketRegistry.updateConfig(marketId, config);
+}
