@@ -17,13 +17,13 @@ if (!connectionString) {
   const user = process.env.DB_USER || "postgres";
   const password = process.env.DB_PASSWORD || "";
   const dbName = process.env.DB_NAME || "snapworth";
-  
+
   connectionString = `postgres://${user}:${password}@${host}:${port}/${dbName}`;
   sslConfig = false;
 } else {
   // Fix for "Self-signed certificate" errors by forcing no-verify in URL
-   connectionString = connectionString.includes('?') 
-    ? `${connectionString}&sslmode=no-verify` 
+  connectionString = connectionString.includes('?')
+    ? `${connectionString}&sslmode=no-verify`
     : `${connectionString}?sslmode=no-verify`;
 }
 
