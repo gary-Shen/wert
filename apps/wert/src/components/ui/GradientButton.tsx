@@ -3,6 +3,8 @@
 import React from 'react'
 import { cn } from '@/lib/utils'
 
+import { motion } from 'framer-motion'
+
 interface GradientButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children?: React.ReactNode
   /** Gradient angle in degrees, default is 135 */
@@ -44,13 +46,16 @@ export function GradientButton({
   } as React.CSSProperties
 
   return (
-    <div
+    <motion.div
       className={cn(
-        "p-[1px] rounded-full inline-flex cursor-pointer transition-transform duration-200 active:scale-95",
+        "p-[1px] rounded-full inline-flex cursor-pointer",
         "hover:shadow-lg",
         className
       )}
       style={gradientStyle}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <button
         className={cn(
@@ -63,6 +68,6 @@ export function GradientButton({
       >
         {children}
       </button>
-    </div>
+    </motion.div>
   )
 }

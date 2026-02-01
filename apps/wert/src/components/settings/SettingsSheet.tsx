@@ -105,8 +105,6 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               <h2 className="text-xl font-semibold">设置</h2>
               <GradientButton
                 onClick={onClose}
-                // 点击 聚焦时放大1.2倍
-                className="active:scale-125 transition-transform duration-200"
                 contentClassName="w-12 h-12 bg-[var(--close-button-bg)]"
                 colors={['var(--close-button-from)', 'var(--close-button-bg)', 'var(--close-button-to)']}
                 stops={[20, 50, 80]}

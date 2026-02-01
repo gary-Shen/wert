@@ -1,6 +1,7 @@
 'use client'
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/ark/popover"
+import { motion } from "framer-motion"
 import { Plus, Camera, Wallet } from "lucide-react"
 import { useState } from "react"
 import { SnapWizard } from "./SnapWizard"
@@ -74,12 +75,16 @@ export function SnapButton() {
       <div className="fixed bottom-8 right-8 z-50">
         <Popover open={isPopoverOpen} data-side="top-left" onOpenChange={(e) => setIsPopoverOpen(e.open)} positioning={{ placement: 'top-end', gutter: 12 }}>
           <PopoverTrigger asChild>
-            <div className={cn(
-              "p-[1px] rounded-full cursor-pointer",
-              "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
-              "shadow-lg",
-              "hover:scale-105 active:scale-125 transition-all duration-200",
-            )}>
+            <motion.div
+              className={cn(
+                "p-[1px] rounded-full cursor-pointer",
+                "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
+                "shadow-lg"
+              )}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
               <div className={cn(
                 "h-12 w-12 rounded-full flex items-center justify-center",
                 "bg-primary text-white",
@@ -87,7 +92,7 @@ export function SnapButton() {
               )}>
                 <Plus className={cn("h-8 w-8 transition-transform duration-200", isPopoverOpen && "rotate-45")} />
               </div>
-            </div>
+            </motion.div>
           </PopoverTrigger>
           <PopoverContent
             className="p-2 rounded-xl shadow-2xl border-border/50"
