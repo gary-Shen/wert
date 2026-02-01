@@ -45,12 +45,6 @@ export function GradientButton({
     backgroundImage: `linear-gradient(${angle}deg, ${stopsString})`,
   } as React.CSSProperties
 
-  const [isHoverable, setIsHoverable] = React.useState(false)
-
-  React.useEffect(() => {
-    setIsHoverable(window.matchMedia('(hover: hover)').matches)
-  }, [])
-
   return (
     <motion.div
       className={cn(
@@ -59,8 +53,7 @@ export function GradientButton({
         className
       )}
       style={gradientStyle}
-      whileHover={isHoverable ? { scale: 1.5 } : {}}
-      whileTap={{ scale: 0.7 }}
+      whileTap={{ scale: 1.25 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <button
