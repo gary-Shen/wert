@@ -38,7 +38,7 @@ const PopoverContent = React.forwardRef<
               open: { opacity: 1, scale: 1 },
               closed: { opacity: 0, scale: 0.5 }
             }}
-            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            transition={{ type: "spring", stiffness: 600, damping: 25 }}
             className={cn(
               "z-50 w-[90vw] sm:w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
               // Base origins per side
