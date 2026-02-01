@@ -93,7 +93,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 onClose()
               }
             }}
-            className="fixed inset-x-0 bottom-0 z-50 h-[90vh] bg-background rounded-t-3xl shadow-2xl overflow-hidden"
+            className="fixed inset-x-0 bottom-0 z-50 h-[90vh] bg-popover rounded-t-3xl shadow-2xl overflow-hidden"
           >
             {/* Drag handle */}
             <div className="flex justify-center py-3">
@@ -105,10 +105,13 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               <h2 className="text-xl font-semibold">设置</h2>
               <GradientButton
                 onClick={onClose}
-                contentClassName="w-9 h-9 bg-muted"
-                colors={['#fff', 'var(--muted)', '#fff']}
+                // 点击 聚焦时放大1.2倍
+                className="active:scale-125 transition-transform duration-200"
+                contentClassName="w-12 h-12 bg-[var(--close-button-bg)]"
+                colors={['var(--close-button-from)', 'var(--close-button-bg)', 'var(--close-button-to)']}
+                stops={[20, 50, 80]}
               >
-                <X className="w-5 h-5" />
+                <X className="w-8 h-8" />
               </GradientButton>
             </div>
 

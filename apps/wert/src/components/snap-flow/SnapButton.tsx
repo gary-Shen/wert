@@ -81,7 +81,7 @@ export function SnapButton() {
               "hover:scale-105 transition-all duration-200",
             )}>
               <div className={cn(
-                "h-16 w-16 rounded-full flex items-center justify-center",
+                "h-12 w-12 rounded-full flex items-center justify-center",
                 "bg-primary text-white",
                 "hover:bg-primary/90 transition-colors duration-200"
               )}>

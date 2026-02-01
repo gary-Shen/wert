@@ -55,7 +55,7 @@ export function GradientButton({
       <button
         className={cn(
           "flex items-center justify-center rounded-full bg-background text-foreground transition-colors duration-200",
-          "hover:bg-accent/10 focus-visible:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+          "hover:bg-accent/10 focus-visible:outline-none",
           contentClassName
         )}
         type="button"

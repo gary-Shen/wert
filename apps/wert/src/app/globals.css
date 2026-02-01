@@ -30,40 +30,63 @@
   --chart-3: hsl(222 47% 11%);              /* Deep Navy */
   --chart-4: hsl(43 74% 66%);               /* Amber */
   --chart-5: hsl(280 65% 60%);              /* Purple */
+  --popover-bg: #F9FAFC;
   /* Gradient border - 亮色用较深青色 */
   --gradient-from: #212f4e;
   --gradient-to: #2f4880;
+  /* close button border */
+  --close-button-bg: #dde1e8;
+  --close-button-from: #fff;
+  --close-button-to: #fff;
 }
 
 .dark {
-  /* 暗色主题 - 基于 Deep Ocean 背景 + Sky Blue 主色 */
-  --background: hsl(222 84% 5%);            /* #020617 - Deep Ocean */
-  --foreground: hsl(214 32% 91%);           /* #E2E8F0 - Slate 200 */
-  --card: hsl(222 47% 11%);                 /* #0F172A - Slate 900 */
-  --card-foreground: hsl(214 32% 91%);      /* #E2E8F0 - Slate 200 */
-  --popover: hsl(222 47% 11%);              /* #0F172A - Slate 900 */
-  --popover-foreground: hsl(214 32% 91%);   /* #E2E8F0 - Slate 200 */
-  --primary: hsl(198 93% 60%);              /* #38BDF8 - Sky Blue */
-  --primary-foreground: hsl(222 84% 5%);    /* #020617 - Deep Ocean */
-  --secondary: hsl(217 33% 17%);            /* Slate 800 */
-  --secondary-foreground: hsl(214 32% 91%); /* Slate 200 */
-  --muted: hsl(217 33% 17%);                /* Slate 800 */
-  --muted-foreground: hsl(215 20% 65%);     /* #94A3B8 - Slate 400 */
-  --accent: hsl(213 94% 68%);               /* #60A5FA - Royal Blue */
-  --accent-foreground: hsl(222 84% 5%);     /* Deep Ocean */
-  --destructive: hsl(0 63% 31%);            /* Dark Red */
-  --destructive-foreground: hsl(214 32% 91%);
-  --border: hsl(217 33% 17% / 0.8);         /* 半透明 Slate 800 */
-  --input: hsl(217 33% 17%);                /* Slate 800 */
-  --ring: hsl(198 93% 60%);                 /* Sky Blue */
-  --chart-1: hsl(198 93% 60%);              /* Sky Blue */
-  --chart-2: hsl(160 60% 45%);              /* Teal */
-  --chart-3: hsl(213 94% 68%);              /* Royal Blue */
-  --chart-4: hsl(280 65% 60%);              /* Purple */
-  --chart-5: hsl(340 75% 55%);              /* Pink */
-  /* Gradient border - 暗色用更亮青色 */
-  --gradient-from: #00ecff;
-  --gradient-to: #00f4ff;
+  /* 暗色主题 - 基于 Space Gray 背景 */
+  --background: hsl(216 14% 15%);           /* #20242A - Space Gray */
+  --foreground: hsl(210 20% 98%);           /* #FAFBFC - Off White */
+  
+  --card: hsl(216 14% 18%);                 /* #282D33 - Slightly lighter */
+  --card-foreground: hsl(210 20% 98%);
+  
+  --popover: hsl(216 14% 18%);              /* #282D33 */
+  --popover-foreground: hsl(210 20% 98%);
+  
+  --primary: hsl(210 100% 66%);             /* #5294FF - Bright Blue Accent */
+  --primary-foreground: hsl(216 14% 15%);   /* Dark bg text */
+  
+  --secondary: hsl(216 14% 22%);            /* #30363D */
+  --secondary-foreground: hsl(210 20% 98%);
+  
+  --muted: hsl(216 14% 22%);                /* #30363D */
+  --muted-foreground: hsl(216 10% 70%);     /* #B0B6BE */
+  
+  --accent: hsl(210 100% 66%);              /* #5294FF */
+  --accent-foreground: hsl(216 14% 15%);
+  
+  --destructive: hsl(0 62% 30%);
+  --destructive-foreground: hsl(210 20% 98%);
+  
+  --border: hsl(216 14% 24%);               /* #353B42 */
+  --input: hsl(216 14% 24%);
+  
+  --ring: hsl(210 100% 66%);
+  
+  --chart-1: hsl(210 100% 66%);
+  --chart-2: hsl(160 60% 45%);
+  --chart-3: hsl(30 80% 55%);
+  --chart-4: hsl(280 65% 60%);
+  --chart-5: hsl(340 75% 55%);
+  
+  --popover-bg: #282D33;
+  
+  /* Gradient border */
+  --gradient-from: #5294FF;
+  --gradient-to: #00D2FF;
+  
+  /* close button border */
+  --close-button-bg: #282D33;
+  --close-button-from: #3F4650;
+  --close-button-to: #3F4650;
 }
 
 @theme inline {
