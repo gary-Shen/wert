@@ -11,8 +11,10 @@ import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/stores/userStore'
 import { ScrollView } from '@/components/ui/ark/scroll-view'
+import { GradientButton } from '@/components/ui/GradientButton'
 
 import { AssetManagementCompact } from './AssetManagementCompact'
+
 
 const CURRENCIES = [
   { value: 'CNY', label: '人民币 (CNY)' },
@@ -101,14 +103,13 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
             {/* Header */}
             <div className="flex items-center justify-between px-6 pb-4">
               <h2 className="text-xl font-semibold">设置</h2>
-              <Button
-                variant="ghost"
-                size="icon"
+              <GradientButton
                 onClick={onClose}
-                className="rounded-full"
+                contentClassName="w-9 h-9 bg-muted"
+                colors={['#fff', 'var(--muted)', '#fff']}
               >
                 <X className="w-5 h-5" />
-              </Button>
+              </GradientButton>
             </div>
 
             {/* Content */}
