@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/ark/button'
 import { getAssets } from '@/app/actions/assets'
 import { getUserSettings, updateUserSettings, UserSettings } from '@/app/actions/user'
 import { AssetAccount } from '@/app/actions/assets'
-import { Loader2, User, Wallet, LogOut, Sun, Moon, Monitor, X, ChevronDown } from 'lucide-react'
+import { Loader2, User, Wallet, LogOut, Sun, Moon, Monitor, X } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
@@ -139,7 +139,7 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
                 </div>
               ) : (
                 <Tabs value={activeTab} onValueChange={(e) => setActiveTab(e.value)} className="flex flex-col h-full">
-                  <div className="px-6 pb-4 border-b">
+                  <div className="px-6 pb-4">
                     <TabsList className="w-full grid grid-cols-2 h-11">
                       <TabsTrigger value="profile" className="flex items-center gap-2 text-base">
                         <User className="w-4 h-4" />

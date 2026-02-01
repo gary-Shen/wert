@@ -90,7 +90,7 @@ export function SettingsPopover({ onClose }: SettingsPopoverProps) {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={(e) => setActiveTab(e.value)} className="flex flex-col h-full">
-          <div className="px-3 pt-3 pb-2 border-b">
+          <div className="px-3 pt-3 pb-2">
             <TabsList className="w-full grid grid-cols-2 h-9">
               <TabsTrigger value="profile" className="flex items-center gap-1.5 text-sm">
                 <User className="w-3.5 h-3.5" />

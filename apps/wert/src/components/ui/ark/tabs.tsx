@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Tabs as ArkTabs } from '@ark-ui/react'
+import { Tabs as ArkTabs, useTabsContext } from '@ark-ui/react'
 import { motion } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
   <ArkTabs.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      "inline-flex h-10 items-center justify-center rounded-full bg-muted p-1 text-muted-foreground",
       className
     )}
     {...props}
@@ -25,22 +25,32 @@ TabsList.displayName = "TabsList"
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof ArkTabs.Trigger>,
   ArkTabs.TriggerProps
->(({ className, children, value, ...props }, ref) => (
-  // We use relative positioning to handle the absolute motion indicator if desired
-  <ArkTabs.Trigger
-    ref={ref}
-    value={value}
-    className={cn(
-      "relative inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-      "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
-      className
-    )}
-    {...props}
-  >
-    {/* Optional: Add animated indicator here if we wanted strictly separate motion div */}
-    {children}
-  </ArkTabs.Trigger>
-))
+>(({ className, children, value, ...props }, ref) => {
+  const { value: selectedValue } = useTabsContext()
+  const isSelected = selectedValue === value
+
+  return (
+    <ArkTabs.Trigger
+      ref={ref}
+      value={value}
+      className={cn(
+        "relative inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+        "data-[state=active]:text-foreground z-0",
+        className
+      )}
+      {...props}
+    >
+      {isSelected && (
+        <motion.span
+          layoutId="bubble"
+          className="absolute inset-0 z-[-1] rounded-full bg-background shadow-sm"
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+        />
+      )}
+      {children}
+    </ArkTabs.Trigger>
+  )
+})
 TabsTrigger.displayName = "TabsTrigger"
 
 const TabsContent = React.forwardRef<

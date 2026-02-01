@@ -41,8 +41,13 @@ const PopoverContent = React.forwardRef<
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
             className={cn(
               "z-50 w-[90vw] sm:w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
+              // Base origins per side
               "data-[side=bottom]:origin-top data-[side=top]:origin-bottom data-[side=left]:origin-right data-[side=right]:origin-left",
-              "data-[placement^=bottom]:origin-top data-[placement^=top]:origin-bottom data-[placement^=left]:origin-right data-[placement^=right]:origin-left",
+              // Specific corner origins based on placement
+              "data-[placement=top-start]:origin-bottom-left data-[placement=top-end]:origin-bottom-right",
+              "data-[placement=bottom-start]:origin-top-left data-[placement=bottom-end]:origin-top-right",
+              "data-[placement=left-start]:origin-top-right data-[placement=left-end]:origin-bottom-right",
+              "data-[placement=right-start]:origin-top-left data-[placement=right-end]:origin-bottom-left",
               className
             )}
           >
