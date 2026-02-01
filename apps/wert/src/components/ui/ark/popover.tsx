@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { Popover as ArkPopover, Portal } from '@ark-ui/react'
+import { Popover as ArkPopover, Portal, usePopoverContext } from '@ark-ui/react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -12,26 +12,47 @@ const PopoverAnchor = ArkPopover.Anchor
 const PopoverContent = React.forwardRef<
   React.ElementRef<typeof ArkPopover.Content>,
   ArkPopover.ContentProps
->(({ className, ...props }, ref) => (
-  <Portal>
-    <ArkPopover.Positioner>
-      <ArkPopover.Content asChild ref={ref} {...props}>
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.15 }}
-          className={cn(
-            "z-50 w-[90vw] sm:w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
-            className
-          )}
-        >
-          {props.children}
-        </motion.div>
-      </ArkPopover.Content>
-    </ArkPopover.Positioner>
-  </Portal>
-))
+>(({ className, ...props }, ref) => {
+  const context = usePopoverContext()
+  const open = context?.open ?? false
+
+  return (
+    <Portal>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
+          />
+        )}
+      </AnimatePresence>
+      <ArkPopover.Positioner>
+        <ArkPopover.Content asChild ref={ref} {...props}>
+          <motion.div
+            initial="closed"
+            animate={open ? "open" : "closed"}
+            exit="closed"
+            variants={{
+              open: { opacity: 1, scale: 1 },
+              closed: { opacity: 0, scale: 0.5 }
+            }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className={cn(
+              "z-50 w-[90vw] sm:w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
+              "data-[side=bottom]:origin-top data-[side=top]:origin-bottom data-[side=left]:origin-right data-[side=right]:origin-left",
+              "data-[placement^=bottom]:origin-top data-[placement^=top]:origin-bottom data-[placement^=left]:origin-right data-[placement^=right]:origin-left",
+              className
+            )}
+          >
+            {props.children}
+          </motion.div>
+        </ArkPopover.Content>
+      </ArkPopover.Positioner>
+    </Portal >
+  )
+})
 PopoverContent.displayName = "PopoverContent"
 
 export { Popover, PopoverTrigger, PopoverContent, PopoverAnchor }

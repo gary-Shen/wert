@@ -23,12 +23,13 @@ function MenuItem({ icon, label, description, onClick, highlighted }: MenuItemPr
       className={cn(
         "flex items-start gap-3 w-full p-3 rounded-lg text-left transition-all",
         "hover:bg-accent hover:scale-[1.02]",
-        highlighted && "bg-primary/10 border border-primary/20"
+        highlighted && "bg-primary/10",
+        "focus-visible:outline-none focus-visible:ring-0"
       )}
     >
       <div className={cn(
         "flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center",
-        highlighted ? "bg-[#1e293b] text-white" : "bg-muted text-muted-foreground"
+        highlighted ? "bg-accent text-white" : "bg-muted text-muted-foreground"
       )}>
         {icon}
       </div>
@@ -71,21 +72,20 @@ export function SnapButton() {
   return (
     <>
       <div className="fixed bottom-8 right-8 z-50">
-        <Popover open={isPopoverOpen} onOpenChange={(e) => setIsPopoverOpen(e.open)} positioning={{ placement: 'top-end', gutter: 12 }}>
+        <Popover open={isPopoverOpen} data-side="top-left" onOpenChange={(e) => setIsPopoverOpen(e.open)} positioning={{ placement: 'top-end', gutter: 12 }}>
           <PopoverTrigger asChild>
             <div className={cn(
               "p-[1px] rounded-full cursor-pointer",
               "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
               "shadow-lg",
               "hover:scale-105 transition-all duration-200",
-              isPopoverOpen && "rotate-45"
             )}>
               <div className={cn(
                 "h-16 w-16 rounded-full flex items-center justify-center",
                 "bg-primary text-white",
                 "hover:bg-primary/90 transition-colors duration-200"
               )}>
-                <Plus className="h-8 w-8" />
+                <Plus className={cn("h-8 w-8 transition-transform duration-200", isPopoverOpen && "rotate-45")} />
               </div>
             </div>
           </PopoverTrigger>
