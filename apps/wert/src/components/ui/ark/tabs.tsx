@@ -42,8 +42,8 @@ const TabsTrigger = React.forwardRef<
           "data-[state=active]:text-foreground z-0",
           className
         )}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.5 }}
+        whileTap={{ scale: 0.7 }}
         transition={{ type: "spring", stiffness: 400, damping: 17 }}
       >
         {isSelected && (
