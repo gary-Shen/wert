@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/ark/button'
 import { AVAILABLE_CURRENCIES, GeoDetectionResult } from '@/lib/geo'
 import { completeSetup } from '@/app/actions/user'
-import { useUserStore } from '@/stores'
+import { useUserStore } from '@/stores/userStore'
 import { Check, Globe, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
