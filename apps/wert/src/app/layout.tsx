@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "SnapWorth",
+  title: "Wert",
   description: "跟踪您的净资产快照",
 };
 
 import { ThemeProvider } from "@/components/theme-provider"
+import { DataSynchronizer } from "@/components/DataSynchronizer"
 
 export default function RootLayout({
   children,
@@ -22,6 +23,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <DataSynchronizer />
           {children}
         </ThemeProvider>
       </body>

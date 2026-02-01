@@ -63,7 +63,7 @@ export default function LoginPage() {
           </div>
 
           <h1 className="text-4xl font-bold tracking-tight">
-            SnapWorth
+            Wert
           </h1>
           <p className="text-muted-foreground text-lg">
             轻松记录，智慧理财

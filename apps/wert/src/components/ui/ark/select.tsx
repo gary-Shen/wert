@@ -118,14 +118,14 @@ const SelectValue = ({ placeholder }: { placeholder?: string }) => (
 )
 
 const SelectContent = ({ children, className }: SelectContentProps) => {
-  const { isMobile, setIsOpen } = React.useContext(SelectContext)
+  const { isMobile, setIsOpen, isOpen } = React.useContext(SelectContext)
 
   if (isMobile) {
     // Mobile: Bottom Sheet Style
     return (
       <Portal>
         <AnimatePresence>
-          <ArkSelect.Positioner className="fixed inset-0 z-[100]">
+          <ArkSelect.Positioner className="fixed inset-0 z-[9999]">
             {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
@@ -142,7 +142,7 @@ const SelectContent = ({ children, className }: SelectContentProps) => {
                 exit={{ y: '100%' }}
                 transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                 className={cn(
-                  "absolute bottom-0 left-0 right-0 z-[100]",
+                  "absolute bottom-0 left-0 right-0 z-[9999]",
                   "max-h-[70vh] overflow-hidden rounded-t-3xl",
                   "bg-background shadow-xl",
                   className
@@ -176,24 +176,28 @@ const SelectContent = ({ children, className }: SelectContentProps) => {
   // Desktop: Standard Dropdown
   return (
     <Portal>
-      <ArkSelect.Positioner className="z-[100]">
-        <ArkSelect.Content asChild>
-          <motion.div
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -4 }}
-            transition={{ duration: 0.15 }}
-            className={cn(
-              "z-[100] min-w-[8rem] overflow-hidden rounded-md border",
-              "bg-popover text-popover-foreground shadow-md",
-              className
-            )}
-          >
-            <div className="p-1">
-              {children}
-            </div>
-          </motion.div>
-        </ArkSelect.Content>
+      <ArkSelect.Positioner className="z-[500]">
+        <AnimatePresence>
+          {isOpen && (
+            <ArkSelect.Content asChild>
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
+                className={cn(
+                  "min-w-[8rem] overflow-hidden rounded-md border",
+                  "bg-popover text-popover-foreground shadow-md",
+                  className
+                )}
+              >
+                <div className="p-1">
+                  {children}
+                </div>
+              </motion.div>
+            </ArkSelect.Content>
+          )}
+        </AnimatePresence>
       </ArkSelect.Positioner>
     </Portal>
   )

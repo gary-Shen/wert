@@ -16,7 +16,7 @@ if (!connectionString) {
   const port = process.env.DB_PORT || "5432";
   const user = process.env.DB_USER || "postgres";
   const password = process.env.DB_PASSWORD || "";
-  const dbName = process.env.DB_NAME || "snapworth";
+  const dbName = process.env.DB_NAME || "wert";
 
   connectionString = `postgres://${user}:${password}@${host}:${port}/${dbName}`;
   sslConfig = false;
