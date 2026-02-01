@@ -53,7 +53,7 @@ export function GradientButton({
         className
       )}
       style={gradientStyle}
-      whileTap={{ scale: 1.25 }}
+      whileTap={{ scale: 1.5 }}
       transition={{ type: "spring", stiffness: 400, damping: 17 }}
     >
       <button

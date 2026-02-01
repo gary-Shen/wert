@@ -81,7 +81,7 @@ export function SnapButton() {
                 "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
                 "shadow-lg"
               )}
-              whileTap={{ scale: 1.25 }}
+              whileTap={{ scale: 1.5 }}
               transition={{ type: "spring", stiffness: 400, damping: 17 }}
             >
               <div className={cn(
