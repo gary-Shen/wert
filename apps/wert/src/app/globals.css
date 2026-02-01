@@ -4,23 +4,23 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  /* 亮色主题 - 基于 Slate 50 背景 + Deep Navy 主色 */
-  --background: hsl(210 40% 98%);           /* #F8FAFC - Slate 50 */
+  /* 亮色主题 - 基于 Slate 100 背景 + Deep Navy 主色 */
+  --background: hsl(210 40% 96.1%);         /* #F1F5F9 - Slate 100 (加深背景以突显卡片) */
   --foreground: hsl(222 47% 11%);           /* #0F172A - Slate 900 */
-  --card: hsl(0 0% 100%);                   /* #FFFFFF - White */
+  --card: #F9FAFC;                          /* #F9FAFC - User Choice (Slate 50-ish) */
   --card-foreground: hsl(222 47% 11%);      /* #0F172A - Slate 900 */
-  --popover: hsl(0 0% 100%);                /* #FFFFFF - White */
+  --popover: #F9FAFC;                       /* #F9FAFC */
   --popover-foreground: hsl(222 47% 11%);   /* #0F172A - Slate 900 */
   --primary: hsl(222 47% 11%);              /* #0F172A - Deep Navy */
   --primary-foreground: hsl(210 40% 98%);   /* #F8FAFC - Slate 50 */
-  --secondary: hsl(210 40% 96%);            /* Slate 100 */
+  --secondary: hsl(214 32% 91%);            /* #E2E8F0 - Slate 200 (加深以保证在白卡片上可见) */
   --secondary-foreground: hsl(222 47% 11%); /* Slate 900 */
-  --muted: hsl(210 40% 96%);                /* Slate 100 */
+  --muted: hsl(214 32% 91%);                /* #E2E8F0 - Slate 200 (同上) */
   --muted-foreground: hsl(215 16% 47%);     /* #64748B - Slate 500 */
   --accent: hsl(217 91% 60%);               /* #2563EB - Electric Blue */
-  --accent-foreground: hsl(0 0% 100%);      /* White */
+  --accent-foreground: #F9FAFC;             /* White */
   --destructive: hsl(0 84% 60%);            /* Red */
-  --destructive-foreground: hsl(0 0% 100%);
+  --destructive-foreground: #F9FAFC;
   --border: hsl(214 32% 91%);               /* Slate 200 */
   --input: hsl(214 32% 91%);                /* Slate 200 */
   --ring: hsl(217 91% 60%);                 /* Electric Blue */
