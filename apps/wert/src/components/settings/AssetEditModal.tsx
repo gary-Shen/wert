@@ -1,17 +1,17 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import React, { useEffect, useState, useTransition } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/ark/sheet'
+import { Button } from '@/components/ui/ark/button'
+import { Input } from '@/components/ui/ark/input'
+import { Label } from '@/components/ui/ark/label'
 import { AutoConfigEditor } from '@/components/settings/AutoConfigEditor'
 import { SymbolSearchInput } from '@/components/settings/SymbolSearchInput'
 import { getAssetById, updateAsset, AssetAccount } from '@/app/actions/assets'
@@ -23,7 +23,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+  createListCollection
+} from '@/components/ui/ark/select'
 
 const CURRENCIES = [
   { value: 'CNY', label: 'CNY - 人民币' },
@@ -101,13 +102,16 @@ export function AssetEditModal({
     ? ['STOCK', 'FUND', 'BOND', 'CRYPTO'].includes(asset.category)
     : false
 
+  // Move collection to top level
+  const currencyCollection = React.useMemo(() => createListCollection({ items: CURRENCIES }), [])
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>编辑资产</DialogTitle>
-          <DialogDescription>修改资产信息和配置</DialogDescription>
-        </DialogHeader>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="flex flex-col overflow-hidden">
+        <SheetHeader>
+          <SheetTitle>编辑资产</SheetTitle>
+          <SheetDescription>修改资产信息和配置</SheetDescription>
+        </SheetHeader>
 
         {loading ? (
           <div className="flex justify-center py-8">
@@ -129,13 +133,13 @@ export function AssetEditModal({
 
                 <div className="grid gap-1.5">
                   <Label>货币</Label>
-                  <Select value={currency} onValueChange={setCurrency}>
+                  <Select value={[currency]} onValueChange={(e) => setCurrency(e.value[0])} collection={currencyCollection}>
                     <SelectTrigger>
                       <SelectValue placeholder="选择货币" />
                     </SelectTrigger>
                     <SelectContent>
                       {CURRENCIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
+                        <SelectItem key={c.value} item={c}>
                           {c.label}
                         </SelectItem>
                       ))}
@@ -222,7 +226,7 @@ export function AssetEditModal({
               )}
             </div>
 
-            <DialogFooter>
+            <SheetFooter className="px-6 pb-6">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 取消
               </Button>
@@ -236,14 +240,14 @@ export function AssetEditModal({
                   '保存'
                 )}
               </Button>
-            </DialogFooter>
+            </SheetFooter>
           </>
         ) : (
           <div className="text-center py-8 text-muted-foreground">
             无法加载资产信息
           </div>
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }

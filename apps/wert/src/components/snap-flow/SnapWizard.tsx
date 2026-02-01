@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "@/components/ui/ark/button"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/ark/dialog"
+import { Input } from "@/components/ui/ark/input"
+import { Label } from "@/components/ui/ark/label"
 import { commitSnapshot, prepareSnapshotDraft, AssetSnapshotDraft } from "@/app/actions/snapshot"
 import { useEffect, useState, useTransition } from "react"
 import { Loader2 } from "lucide-react"
@@ -64,7 +64,7 @@ export function SnapWizard({ open, onOpenChange }: { open: boolean; onOpenChange
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(e) => onOpenChange(e.open)}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>创建快照</DialogTitle>

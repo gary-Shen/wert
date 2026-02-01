@@ -1,8 +1,9 @@
 'use client'
 
 import { deleteAsset, archiveAsset, unarchiveAsset } from "@/app/actions/assets";
-import { Button } from "@/components/ui/button";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/ark/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/ark/alert-dialog";
+import { DialogClose } from "@/components/ui/ark/dialog";
 import { Trash2, Archive, ArchiveRestore, Pencil } from "lucide-react";
 import { useState, useTransition } from "react";
 import { AssetEditModal } from "@/components/settings/AssetEditModal";
@@ -76,11 +77,15 @@ export function AssetManagementCompact({ initialAssets, onAssetsChange }: AssetM
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>取消</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => startTransition(async () => {
-                      await deleteAsset(asset.id);
-                      onAssetsChange?.();
-                    })}>删除</AlertDialogAction>
+                    <DialogClose asChild>
+                      <AlertDialogCancel>取消</AlertDialogCancel>
+                    </DialogClose>
+                    <DialogClose asChild>
+                      <AlertDialogAction onClick={() => startTransition(async () => {
+                        await deleteAsset(asset.id);
+                        onAssetsChange?.();
+                      })}>删除</AlertDialogAction>
+                    </DialogClose>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

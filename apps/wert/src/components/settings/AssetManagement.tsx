@@ -1,16 +1,16 @@
 'use client'
 
 import { createAsset, deleteAsset, archiveAsset, unarchiveAsset, searchAssetSymbols } from "@/app/actions/assets";
-import { AutoCompleteInput, type AutoCompleteItem } from "@/components/ui/autocomplete";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AutoCompleteInput, type AutoCompleteItem } from "@/components/ui/ark/autocomplete";
+import { Button } from "@/components/ui/ark/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/ark/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/ark/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/ark/alert-dialog";
+import { Input } from "@/components/ui/ark/input";
+import { Label } from "@/components/ui/ark/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, createListCollection } from "@/components/ui/ark/select";
 import { Plus, Trash2, Archive, ArchiveRestore, Pencil } from "lucide-react";
-import { useState, useTransition, useCallback } from "react";
+import React, { useState, useTransition, useCallback } from "react";
 import { AssetEditModal } from "@/components/settings/AssetEditModal";
 
 export function AssetManagement({ initialAssets, onAssetsChange }: { initialAssets: any[], onAssetsChange?: () => void }) {
@@ -120,13 +120,37 @@ export function AssetManagement({ initialAssets, onAssetsChange }: { initialAsse
   }, []);
 
   const handleSymbolSelect = (item: AutoCompleteItem) => {
-    const data = item.data;
+    const data = item.data as { symbol: string; cnName: string };
     setFormData(prev => ({
       ...prev,
       symbol: data.symbol,
       name: prev.name || data.cnName
     }));
   };
+
+  const assetTypeCollection = React.useMemo(() => createListCollection({
+    items: [
+      { value: "CASH", label: "现金 (低风险 · 存款/货基)" },
+      { value: "STOCK", label: "股票 (高风险 · 个股)" },
+      { value: "FUND", label: "基金 (中高风险 · 偏股/混合)" },
+      { value: "BOND", label: "债券 (低风险 · 债券/债基)" },
+      { value: "CRYPTO", label: "加密货币 (高风险)" },
+      { value: "FIXED", label: "房产 (不动产)" },
+      { value: "VEHICLE", label: "交通工具 (消费品)" },
+      { value: "METAL", label: "贵金属 (保值)" },
+      { value: "COLLECT", label: "收藏品 (另类投资)" },
+      { value: "LIABILITY", label: "负债 (贷款)" },
+    ]
+  }), [])
+
+  const currencyCollection = React.useMemo(() => createListCollection({
+    items: [
+      { value: "CNY", label: "CNY" },
+      { value: "USD", label: "USD" },
+      { value: "HKD", label: "HKD" },
+      { value: "JPY", label: "JPY" },
+    ]
+  }), [])
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -135,7 +159,7 @@ export function AssetManagement({ initialAssets, onAssetsChange }: { initialAsse
           <CardTitle>资产列表</CardTitle>
           <CardDescription>管理您的资产。</CardDescription>
         </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(e) => setIsOpen(e.open)}>
           <DialogTrigger asChild>
             <Button><Plus className="mr-2 h-4 w-4" /> 新增资产</Button>
           </DialogTrigger>
@@ -171,36 +195,40 @@ export function AssetManagement({ initialAssets, onAssetsChange }: { initialAsse
 
                 <div className="grid gap-2">
                   <Label htmlFor="type">类型</Label>
-                  <Select onValueChange={v => setFormData({ ...formData, type: v })} defaultValue={formData.type}>
+                  <Select
+                    value={[formData.type]}
+                    onValueChange={(e) => setFormData({ ...formData, type: e.value[0] })}
+                    collection={assetTypeCollection}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="选择类型" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CASH">现金 (低风险 · 存款/货基)</SelectItem>
-                      <SelectItem value="STOCK">股票 (高风险 · 个股)</SelectItem>
-                      <SelectItem value="FUND">基金 (中高风险 · 偏股/混合)</SelectItem>
-                      <SelectItem value="BOND">债券 (低风险 · 债券/债基)</SelectItem>
-                      <SelectItem value="CRYPTO">加密货币 (高风险)</SelectItem>
-                      <SelectItem value="FIXED">房产 (不动产)</SelectItem>
-                      <SelectItem value="VEHICLE">交通工具 (消费品)</SelectItem>
-                      <SelectItem value="METAL">贵金属 (保值)</SelectItem>
-                      <SelectItem value="COLLECT">收藏品 (另类投资)</SelectItem>
-                      <SelectItem value="LIABILITY">负债 (贷款)</SelectItem>
+                      {assetTypeCollection.items.map((item) => (
+                        <SelectItem key={item.value} item={item}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="grid gap-2">
                   <Label htmlFor="currency">货币</Label>
-                  <Select onValueChange={v => setFormData({ ...formData, currency: v })} defaultValue={formData.currency}>
+                  <Select
+                    value={[formData.currency]}
+                    onValueChange={(e) => setFormData({ ...formData, currency: e.value[0] })}
+                    collection={currencyCollection}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="选择货币" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="CNY">CNY</SelectItem>
-                      <SelectItem value="USD">USD</SelectItem>
-                      <SelectItem value="HKD">HKD</SelectItem>
-                      <SelectItem value="JPY">JPY</SelectItem>
+                      {currencyCollection.items.map((item) => (
+                        <SelectItem key={item.value} item={item}>
+                          {item.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -321,11 +349,15 @@ export function AssetManagement({ initialAssets, onAssetsChange }: { initialAsse
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>取消</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => startTransition(async () => {
-                        await deleteAsset(asset.id);
-                        onAssetsChange?.();
-                      })}>删除</AlertDialogAction>
+                      <DialogClose asChild>
+                        <AlertDialogCancel>取消</AlertDialogCancel>
+                      </DialogClose>
+                      <DialogClose asChild>
+                        <AlertDialogAction onClick={() => startTransition(async () => {
+                          await deleteAsset(asset.id);
+                          onAssetsChange?.();
+                        })}>删除</AlertDialogAction>
+                      </DialogClose>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>

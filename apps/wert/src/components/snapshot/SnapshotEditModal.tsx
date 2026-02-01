@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/ark/sheet'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,10 +19,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from '@/components/ui/ark/alert-dialog'
+import { Button } from '@/components/ui/ark/button'
+import { Input } from '@/components/ui/ark/input'
+import { Label } from '@/components/ui/ark/label'
 import {
   getSnapshotDetails,
   updateSnapshot,
@@ -185,14 +185,14 @@ export function SnapshotEditModal({
   }, 0)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
-        <DialogHeader>
-          <DialogTitle>编辑快照</DialogTitle>
-          <DialogDescription>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="flex flex-col overflow-hidden">
+        <SheetHeader>
+          <SheetTitle>编辑快照</SheetTitle>
+          <SheetDescription>
             修改快照的日期、备注及各资产价值
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
         {loading ? (
           <div className="flex justify-center py-8">
@@ -303,7 +303,7 @@ export function SnapshotEditModal({
               )}
             </div>
 
-            <DialogFooter className="flex-row gap-2 sm:gap-2">
+            <SheetFooter className="flex-row gap-2 sm:gap-2 px-6 pb-6">
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="destructive" disabled={isPending}>
@@ -340,10 +340,10 @@ export function SnapshotEditModal({
                   '保存修改'
                 )}
               </Button>
-            </DialogFooter>
+            </SheetFooter>
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }

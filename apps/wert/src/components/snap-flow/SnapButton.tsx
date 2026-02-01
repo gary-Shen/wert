@@ -1,7 +1,6 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/ark/popover"
 import { Plus, Camera, Wallet } from "lucide-react"
 import { useState } from "react"
 import { SnapWizard } from "./SnapWizard"
@@ -72,26 +71,26 @@ export function SnapButton() {
   return (
     <>
       <div className="fixed bottom-8 right-8 z-50">
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+        <Popover open={isPopoverOpen} onOpenChange={(e) => setIsPopoverOpen(e.open)} positioning={{ placement: 'top-end', gutter: 12 }}>
           <PopoverTrigger asChild>
-            <Button
-              size="icon"
-              className={cn(
-                "h-16 w-16 rounded-full shadow-2xl",
-                "bg-primary text-primary-foreground",
-                "hover:scale-105 transition-all duration-200",
-                "hover:shadow-primary/25 hover:shadow-xl",
-                isPopoverOpen && "rotate-45"
-              )}
-            >
-              <Plus className="h-8 w-8 transition-transform duration-200" />
-            </Button>
+            <div className={cn(
+              "p-[1px] rounded-full cursor-pointer",
+              "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
+              "shadow-lg",
+              "hover:scale-105 transition-all duration-200",
+              isPopoverOpen && "rotate-45"
+            )}>
+              <div className={cn(
+                "h-16 w-16 rounded-full flex items-center justify-center",
+                "bg-primary text-white",
+                "hover:bg-primary/90 transition-colors duration-200"
+              )}>
+                <Plus className="h-8 w-8" />
+              </div>
+            </div>
           </PopoverTrigger>
           <PopoverContent
-            side="top"
-            align="end"
-            sideOffset={12}
-            className="w-72 p-2 rounded-xl shadow-2xl border-border/50"
+            className="p-2 rounded-xl shadow-2xl border-border/50"
           >
             <div className="space-y-1">
               <MenuItem

@@ -4,13 +4,14 @@ import { Area, AreaChart, ResponsiveContainer, XAxis, YAxis, Tooltip, CartesianG
 import {
   Dialog,
   DialogContent,
-} from "@/components/ui/dialog"
+} from "@/components/ui/ark/dialog"
 import { getSnapshotDetails } from '@/app/actions/snapshot'
 import { Loader2, Pencil } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/components/ui/ark/button'
 import { SnapshotEditModal } from '@/components/snapshot/SnapshotEditModal'
 
 import { SnapOverview } from './SnapOverview'
+import { Badge } from '@/components/ui/ark/badge'
 
 export function SnapHistory({ data, onRefresh }: { data: DashboardData; onRefresh?: () => void }) {
   const [selectedSnapshot, setSelectedSnapshot] = useState<SnapshotHistoryItem | null>(null);
@@ -51,7 +52,7 @@ export function SnapHistory({ data, onRefresh }: { data: DashboardData; onRefres
 
   return (
     <>
-      <div className="max-w-md mx-auto min-h-full w-full flex flex-col items-center justify-start py-6 px-4 gap-6 font-sans">
+      <div className="max-w-md mx-auto min-h-full w-full flex flex-col items-center justify-start gap-6 font-sans">
 
         {/* Chart Card */}
         <div className="w-full">
@@ -158,9 +159,9 @@ export function SnapHistory({ data, onRefresh }: { data: DashboardData; onRefres
           ) : overviewData ? (
             <div className="relative">
               <div className="absolute top-4 left-0 w-full text-center pointer-events-none z-10">
-                <div className="inline-block bg-primary/90 backdrop-blur text-primary-foreground text-[10px] px-3 py-1 rounded-full font-medium">
+                <Badge variant="default" className="text-[10px] px-3 py-1 font-medium pointer-events-auto">
                   {selectedSnapshot?.date} 快照
-                </div>
+                </Badge>
               </div>
               <SnapOverview data={overviewData} className="pb-0" />
               {selectedSnapshot?.note && (

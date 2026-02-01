@@ -7,6 +7,7 @@ import { getCategoryIcon } from './icons'
 import { ArrowUpRight, ArrowDownRight, ChevronDown, ChevronUp } from 'lucide-react'
 import { SnapshotCompareSelector } from './SnapshotCompareSelector'
 import { getComparisonData } from '@/app/actions/snapshot'
+import { Badge } from '@/components/ui/ark/badge'
 
 // Category name mapping
 const CATEGORY_NAMES: Record<string, string> = {
@@ -121,7 +122,7 @@ export function SnapAnalysis({ data }: { data: DashboardData }) {
   const selectedCompareSnapshot = data.snapshots.find(s => s.id === selectedCompareId)
 
   return (
-    <div className="max-w-md mx-auto min-h-full w-full flex flex-col items-center justify-start py-6 px-4 gap-6 font-sans">
+    <div className="max-w-md mx-auto min-h-full w-full flex flex-col items-center justify-start gap-6 font-sans">
       <div className="w-full">
         {/* Header with Compare Selector */}
         <div className="flex items-center justify-between mb-4">
@@ -251,14 +252,14 @@ export function SnapAnalysis({ data }: { data: DashboardData }) {
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-foreground truncate max-w-[100px] sm:max-w-[140px]">{item.name}</span>
                         {item.isNew && (
-                          <span className="text-[10px] bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300 px-1.5 py-0.5 rounded-full font-bold">
+                          <Badge variant="secondary" className="px-1.5 py-0 text-[10px] h-5 bg-blue-100 text-blue-700 hover:bg-blue-100/80 dark:bg-blue-900 dark:text-blue-300">
                             NEW
-                          </span>
+                          </Badge>
                         )}
                         {item.isRemoved && (
-                          <span className="text-[10px] bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-300 px-1.5 py-0.5 rounded-full font-bold">
+                          <Badge variant="destructive" className="px-1.5 py-0 text-[10px] h-5">
                             已移除
-                          </span>
+                          </Badge>
                         )}
                       </div>
                       <span className="text-xs text-muted-foreground font-medium">

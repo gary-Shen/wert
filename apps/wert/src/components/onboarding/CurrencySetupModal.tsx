@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
+} from '@/components/ui/ark/dialog'
+import { Button } from '@/components/ui/ark/button'
 import { AVAILABLE_CURRENCIES, GeoDetectionResult } from '@/lib/geo'
 import { completeSetup } from '@/app/actions/user'
 import { useUserStore } from '@/stores'
@@ -51,8 +51,8 @@ export function CurrencySetupModal({ open, onOpenChange, geoResult }: CurrencySe
   const selectedCurrencyInfo = AVAILABLE_CURRENCIES.find((c) => c.code === selectedCurrency)
 
   return (
-    <Dialog open={open} onOpenChange={() => { }}>
-      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+    <Dialog open={open} onOpenChange={() => { }} closeOnInteractOutside={false}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Globe className="w-5 h-5 text-primary" />

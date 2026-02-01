@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useState, useTransition } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+  createListCollection,
+} from '@/components/ui/ark/select'
 import { getSnapshotsForComparison } from '@/app/actions/snapshot'
+import { useMemo } from 'react'
 
 interface SnapshotOption {
   id: string
@@ -41,18 +43,29 @@ export function SnapshotCompareSelector({
     })
   }, [currentSnapshotId])
 
+  const collection = useMemo(() => createListCollection({
+    items: snapshots.map(snap => ({
+      value: snap.id,
+      label: `${snap.date} (${snap.netWorth.toLocaleString()})`
+    }))
+  }), [snapshots])
+
   if (loading || snapshots.length === 0) {
     return null
   }
 
   return (
-    <Select value={selectedSnapshotId || ''} onValueChange={onSelect}>
+    <Select
+      value={selectedSnapshotId ? [selectedSnapshotId] : []}
+      onValueChange={(e) => onSelect(e.value[0])}
+      collection={collection}
+    >
       <SelectTrigger className={className}>
         <SelectValue placeholder="选择对比快照" />
       </SelectTrigger>
       <SelectContent>
         {snapshots.map((snap) => (
-          <SelectItem key={snap.id} value={snap.id}>
+          <SelectItem key={snap.id} item={{ value: snap.id, label: `${snap.date} (${snap.netWorth.toLocaleString()})` }}>
             {snap.date} ({snap.netWorth.toLocaleString()})
           </SelectItem>
         ))}

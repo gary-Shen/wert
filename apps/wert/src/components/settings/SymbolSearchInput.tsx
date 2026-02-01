@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Input } from '@/components/ui/input'
+import { Input } from '@/components/ui/ark/input'
 import { useDebouncedCallback } from 'use-debounce'
 import { Loader2, Search, Check } from 'lucide-react'
 

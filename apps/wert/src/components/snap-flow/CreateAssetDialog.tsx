@@ -1,14 +1,14 @@
 'use client'
 
 import { createAsset, searchAssetSymbols } from "@/app/actions/assets";
-import { AutoCompleteInput, type AutoCompleteItem } from "@/components/ui/autocomplete";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AutoCompleteInput, type AutoCompleteItem } from "@/components/ui/ark/autocomplete";
+import { Button } from "@/components/ui/ark/button";
+import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/ark/sheet";
+import { Input } from "@/components/ui/ark/input";
+import { Label } from "@/components/ui/ark/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, createListCollection } from "@/components/ui/ark/select";
 import { Loader2 } from "lucide-react";
-import { useState, useTransition, useCallback } from "react";
+import React, { useState, useTransition, useCallback } from "react";
 
 interface CreateAssetDialogProps {
   open: boolean;
@@ -104,7 +104,7 @@ export function CreateAssetDialog({ open, onOpenChange, onSuccess }: CreateAsset
   }, []);
 
   const handleSymbolSelect = (item: AutoCompleteItem) => {
-    const data = item.data;
+    const data = item.data as { symbol: string; cnName: string };
     setFormData(prev => ({
       ...prev,
       symbol: data.symbol,
@@ -112,18 +112,42 @@ export function CreateAssetDialog({ open, onOpenChange, onSuccess }: CreateAsset
     }));
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] max-h-[calc(100vh-32px)] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>添加资产</DialogTitle>
-            <DialogDescription>
-              创建一个新的资产或负债跟踪项。
-            </DialogDescription>
-          </DialogHeader>
+  const assetTypeCollection = React.useMemo(() => createListCollection({
+    items: [
+      { value: "CASH", label: "现金 (低风险 · 存款/货基)" },
+      { value: "STOCK", label: "股票 (高风险 · 个股)" },
+      { value: "FUND", label: "基金 (中高风险 · 偏股/混合)" },
+      { value: "BOND", label: "债券 (低风险 · 债券/债基)" },
+      { value: "CRYPTO", label: "加密货币 (高风险)" },
+      { value: "FIXED", label: "房产 (不动产)" },
+      { value: "VEHICLE", label: "交通工具 (消费品)" },
+      { value: "METAL", label: "贵金属 (保值)" },
+      { value: "COLLECT", label: "收藏品 (另类投资)" },
+      { value: "LIABILITY", label: "负债 (贷款)" },
+    ]
+  }), [])
 
-          <div className="grid gap-4 py-4">
+  const currencyCollection = React.useMemo(() => createListCollection({
+    items: [
+      { value: "CNY", label: "CNY" },
+      { value: "USD", label: "USD" },
+      { value: "HKD", label: "HKD" },
+      { value: "JPY", label: "JPY" },
+    ]
+  }), [])
+
+  return (
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="overflow-y-auto">
+        <form onSubmit={handleSubmit}>
+          <SheetHeader>
+            <SheetTitle>添加资产</SheetTitle>
+            <SheetDescription>
+              创建一个新的资产或负债跟踪项。
+            </SheetDescription>
+          </SheetHeader>
+
+          <div className="grid gap-4 py-4 px-6">
             <div className="grid gap-2">
               <Label htmlFor="name">名称</Label>
               <Input
@@ -138,36 +162,40 @@ export function CreateAssetDialog({ open, onOpenChange, onSuccess }: CreateAsset
 
             <div className="grid gap-2">
               <Label htmlFor="type">类型</Label>
-              <Select onValueChange={v => setFormData({ ...formData, type: v })} defaultValue={formData.type}>
+              <Select
+                value={[formData.type]}
+                onValueChange={(e) => setFormData({ ...formData, type: e.value[0] })}
+                collection={assetTypeCollection}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="选择类型" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CASH">现金 (低风险 · 存款/货基)</SelectItem>
-                  <SelectItem value="STOCK">股票 (高风险 · 个股)</SelectItem>
-                  <SelectItem value="FUND">基金 (中高风险 · 偏股/混合)</SelectItem>
-                  <SelectItem value="BOND">债券 (低风险 · 债券/债基)</SelectItem>
-                  <SelectItem value="CRYPTO">加密货币 (高风险)</SelectItem>
-                  <SelectItem value="FIXED">房产 (不动产)</SelectItem>
-                  <SelectItem value="VEHICLE">交通工具 (消费品)</SelectItem>
-                  <SelectItem value="METAL">贵金属 (保值)</SelectItem>
-                  <SelectItem value="COLLECT">收藏品 (另类投资)</SelectItem>
-                  <SelectItem value="LIABILITY">负债 (贷款)</SelectItem>
+                  {assetTypeCollection.items.map((item) => (
+                    <SelectItem key={item.value} item={item}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="currency">货币</Label>
-              <Select onValueChange={v => setFormData({ ...formData, currency: v })} defaultValue={formData.currency}>
+              <Select
+                value={[formData.currency]}
+                onValueChange={(e) => setFormData({ ...formData, currency: e.value[0] })}
+                collection={currencyCollection}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="选择货币" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="CNY">CNY</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="HKD">HKD</SelectItem>
-                  <SelectItem value="JPY">JPY</SelectItem>
+                  {currencyCollection.items.map((item) => (
+                    <SelectItem key={item.value} item={item}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -234,14 +262,14 @@ export function CreateAssetDialog({ open, onOpenChange, onSuccess }: CreateAsset
             )}
           </div>
 
-          <DialogFooter>
+          <SheetFooter>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               保存资产
             </Button>
-          </DialogFooter>
+          </SheetFooter>
         </form>
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   );
 }

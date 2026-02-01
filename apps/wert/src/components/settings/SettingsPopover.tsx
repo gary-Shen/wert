@@ -1,9 +1,9 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { PopoverContent } from '@/components/ui/popover'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
+import { PopoverContent } from '@/components/ui/ark/popover'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/ark/tabs'
+import { Button } from '@/components/ui/ark/button'
 import { getAssets } from '@/app/actions/assets'
 import { getUserSettings, updateUserSettings, UserSettings } from '@/app/actions/user'
 import { AssetAccount } from '@/app/actions/assets'
@@ -11,14 +11,15 @@ import { Loader2, User, Wallet, LogOut, Sun, Moon, Monitor } from 'lucide-react'
 import { signOut } from '@/lib/auth-client'
 import { useTheme } from 'next-themes'
 import { useRouter } from 'next/navigation'
-import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollView } from '@/components/ui/ark/scroll-view'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+  createListCollection
+} from '@/components/ui/ark/select'
 import { AssetManagementCompact } from './AssetManagementCompact'
 
 const CURRENCIES = [
@@ -77,11 +78,10 @@ export function SettingsPopover({ onClose }: SettingsPopoverProps) {
     router.push('/login')
   }
 
+  const currencyCollection = React.useMemo(() => createListCollection({ items: CURRENCIES }), [])
+
   return (
     <PopoverContent
-      side="bottom"
-      align="end"
-      sideOffset={8}
       className="w-96 p-0 rounded-xl shadow-2xl border-border/50 max-h-[calc(100vh-32px)] overflow-hidden"
     >
       {loading ? (
@@ -89,7 +89,7 @@ export function SettingsPopover({ onClose }: SettingsPopoverProps) {
           <Loader2 className="animate-spin h-6 w-6 text-muted-foreground" />
         </div>
       ) : (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+        <Tabs value={activeTab} onValueChange={(e) => setActiveTab(e.value)} className="flex flex-col h-full">
           <div className="px-3 pt-3 pb-2 border-b">
             <TabsList className="w-full grid grid-cols-2 h-9">
               <TabsTrigger value="profile" className="flex items-center gap-1.5 text-sm">
@@ -103,7 +103,7 @@ export function SettingsPopover({ onClose }: SettingsPopoverProps) {
             </TabsList>
           </div>
 
-          <ScrollArea className="flex-1 max-h-[400px]">
+          <ScrollView className="flex-1 max-h-[400px]">
             <TabsContent value="profile" className="m-0 p-4 space-y-4">
               {userSettings && (
                 <>
@@ -131,15 +131,16 @@ export function SettingsPopover({ onClose }: SettingsPopoverProps) {
                   <div className="space-y-2">
                     <label className="text-sm font-medium">基准货币</label>
                     <Select
-                      value={userSettings.baseCurrency || 'CNY'}
-                      onValueChange={handleCurrencyChange}
+                      value={[userSettings.baseCurrency || 'CNY']}
+                      onValueChange={(e) => handleCurrencyChange(e.value[0])}
+                      collection={currencyCollection}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {CURRENCIES.map(c => (
-                          <SelectItem key={c.value} value={c.value}>
+                          <SelectItem key={c.value} item={c}>
                             {c.label}
                           </SelectItem>
                         ))}
@@ -200,7 +201,7 @@ export function SettingsPopover({ onClose }: SettingsPopoverProps) {
                 onAssetsChange={refreshAssets}
               />
             </TabsContent>
-          </ScrollArea>
+          </ScrollView>
         </Tabs>
       )}
     </PopoverContent>

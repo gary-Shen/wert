@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/ark/button'
+import { Input } from '@/components/ui/ark/input'
+import { Label } from '@/components/ui/ark/label'
 import { updateUserProfile } from '@/app/actions/user'
 import { signOut } from '@/lib/auth-client'
 import { AVAILABLE_CURRENCIES } from '@/lib/geo'

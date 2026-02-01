@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useEffect, useState, useCallback } from 'react'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/ark/sheet'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/ark/tabs'
 import { AssetManagement } from '@/components/settings/AssetManagement'
 import { UserProfileTab } from '@/components/settings/UserProfileTab'
 import { getAssets } from '@/app/actions/assets'
@@ -45,21 +45,21 @@ export function SettingsModal({ open, onOpenChange }: { open: boolean; onOpenCha
   }, [])
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4">
-          <DialogTitle className="text-2xl">设置</DialogTitle>
-          <DialogDescription>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent className="flex flex-col overflow-hidden">
+        <SheetHeader>
+          <SheetTitle className="text-2xl">设置</SheetTitle>
+          <SheetDescription>
             管理您的账户信息和资产配置
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
 
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Loader2 className="animate-spin h-8 w-8 text-muted-foreground" />
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+          <Tabs value={activeTab} onValueChange={(e) => setActiveTab(e.value)} className="flex-1 flex flex-col overflow-hidden">
             <div className="px-6">
               <TabsList className="w-full grid grid-cols-2">
                 <TabsTrigger value="profile" className="flex items-center gap-2">
@@ -94,7 +94,7 @@ export function SettingsModal({ open, onOpenChange }: { open: boolean; onOpenCha
             </div>
           </Tabs>
         )}
-      </DialogContent>
-    </Dialog>
+      </SheetContent>
+    </Sheet>
   )
 }

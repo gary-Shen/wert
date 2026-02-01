@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signIn, useSession } from "@/lib/auth-client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/ark/button";
 import { Loader2 } from "lucide-react";
 
 // GitHub icon component

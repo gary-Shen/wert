@@ -1,7 +1,7 @@
 'use client'
 
-import { Button } from "@/components/ui/button"
-import { Popover, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from "@/components/ui/ark/button"
+import { Popover, PopoverTrigger } from "@/components/ui/ark/popover"
 import { Settings } from "lucide-react"
 import { useState } from "react"
 import { SettingsPopover } from "./SettingsPopover"
@@ -10,8 +10,8 @@ export function SettingsButton() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="fixed top-6 right-6 z-50">
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
+    <div className="hidden md:block fixed top-6 right-6 z-50">
+      <Popover open={isOpen} onOpenChange={(e) => setIsOpen(e.open)} positioning={{ placement: "bottom-end", gutter: 8 }}>
         <PopoverTrigger asChild>
           <Button
             size="icon"
