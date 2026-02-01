@@ -105,9 +105,9 @@ export function SettingsSheet({ open, onClose }: SettingsSheetProps) {
               <h2 className="text-xl font-semibold">设置</h2>
               <GradientButton
                 onClick={onClose}
-                contentClassName="w-12 h-12 bg-[var(--close-button-bg)]"
-                colors={['var(--close-button-from)', 'var(--close-button-bg)', 'var(--close-button-to)']}
-                stops={[20, 50, 80]}
+                contentClassName="w-10 h-10 bg-[var(--close-button-bg)] text-muted-foreground"
+                colors={['var(--close-button-from)', 'var(--close-button-mid)', 'var(--close-button-mid)', 'var(--close-button-to)']}
+                stops={[20, 35, 55, 80]}
               >
                 <X className="w-8 h-8" />
               </GradientButton>

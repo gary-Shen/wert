@@ -36,6 +36,7 @@
   --gradient-to: #2f4880;
   /* close button border */
   --close-button-bg: #dde1e8;
+  --close-button-mid: #eef1f7;
   --close-button-from: #fff;
   --close-button-to: #fff;
 }
@@ -84,7 +85,8 @@
   --gradient-to: #00D2FF;
   
   /* close button border */
-  --close-button-bg: #282D33;
+  --close-button-bg: #21252c;
+  --close-button-mid: #262d38;
   --close-button-from: #3F4650;
   --close-button-to: #3F4650;
 }
