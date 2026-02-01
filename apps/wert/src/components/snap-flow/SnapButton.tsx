@@ -24,7 +24,6 @@ function MenuItem({ icon, label, description, onClick, highlighted }: MenuItemPr
       className={cn(
         "flex items-start gap-3 w-full p-3 rounded-2xl text-left transition-all",
         "hover:bg-accent hover:scale-[1.02]",
-        highlighted && "bg-primary/10",
         "focus-visible:outline-none focus-visible:ring-0"
       )}
     >
