@@ -78,7 +78,7 @@ export function SnapButton() {
               "p-[1px] rounded-full cursor-pointer",
               "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
               "shadow-lg",
-              "hover:scale-105 transition-all duration-200",
+              "hover:scale-105 active:scale-125 transition-all duration-200",
             )}>
               <div className={cn(
                 "h-12 w-12 rounded-full flex items-center justify-center",
