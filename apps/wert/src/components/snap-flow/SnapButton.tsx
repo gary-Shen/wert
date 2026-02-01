@@ -22,7 +22,7 @@ function MenuItem({ icon, label, description, onClick, highlighted }: MenuItemPr
     <button
       onClick={onClick}
       className={cn(
-        "flex items-start gap-3 w-full p-3 rounded-lg text-left transition-all",
+        "flex items-start gap-3 w-full p-3 rounded-2xl text-left transition-all",
         "hover:bg-accent hover:scale-[1.02]",
         highlighted && "bg-primary/10",
         "focus-visible:outline-none focus-visible:ring-0"
@@ -94,7 +94,7 @@ export function SnapButton() {
             </motion.div>
           </PopoverTrigger>
           <PopoverContent
-            className="p-2 rounded-xl shadow-2xl border-border/50"
+            className="p-2 rounded-3xl shadow-2xl border-border/50"
           >
             <div className="space-y-1">
               <MenuItem
