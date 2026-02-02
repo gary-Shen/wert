@@ -72,7 +72,7 @@ export function SnapButton() {
   return (
     <>
       <div className="fixed bottom-8 right-8 z-50">
-        <Popover open={isPopoverOpen} data-side="top-left" onOpenChange={(e) => setIsPopoverOpen(e.open)} positioning={{ placement: 'top-end', gutter: 12 }}>
+        <Popover open={isPopoverOpen} data-side="top-left" onOpenChange={(e) => setIsPopoverOpen(e.open)} positioning={{ placement: 'top-end', gutter: 12, shift: -16 }}>
           <PopoverTrigger asChild>
             <motion.div
               className={cn(
@@ -80,8 +80,8 @@ export function SnapButton() {
                 "bg-[linear-gradient(135deg,var(--gradient-from),var(--gradient-to))]",
                 "shadow-lg"
               )}
-              whileTap={{ scale: 1.5 }}
-              transition={{ type: "spring", stiffness: 400, damping: 17 }}
+              whileTap={{ scale: 1.25 }}
+              transition={{ type: "spring", stiffness: 600, damping: 20 }}
             >
               <div className={cn(
                 "h-12 w-12 rounded-full flex items-center justify-center",
@@ -93,7 +93,7 @@ export function SnapButton() {
             </motion.div>
           </PopoverTrigger>
           <PopoverContent
-            className="p-2 rounded-3xl shadow-2xl border-border/50"
+            className="p-2 rounded-3xl shadow-2xl border-border/50 w-[calc(100vw-2rem)]"
           >
             <div className="space-y-1">
               <MenuItem

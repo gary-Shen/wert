@@ -24,7 +24,7 @@ const PopoverContent = React.forwardRef<
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-[1px]"
+            className="fixed inset-0 z-40 bg-black/10"
           />
         )}
       </AnimatePresence>
@@ -38,9 +38,9 @@ const PopoverContent = React.forwardRef<
               open: { opacity: 1, scale: 1 },
               closed: { opacity: 0, scale: 0.5 }
             }}
-            transition={{ type: "spring", stiffness: 600, damping: 25 }}
+            transition={{ type: "spring", stiffness: 600, damping: 30 }}
             className={cn(
-              "z-50 w-[90vw] sm:w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none",
+              "z-50 w-[90vw] sm:w-72 rounded-md ring-2 ring-border bg-popover p-4 text-popover-foreground shadow-md outline-none",
               // Base origins per side
               "data-[side=bottom]:origin-top data-[side=top]:origin-bottom data-[side=left]:origin-right data-[side=right]:origin-left",
               // Specific corner origins based on placement
