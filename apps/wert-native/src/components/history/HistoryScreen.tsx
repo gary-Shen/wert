@@ -7,6 +7,8 @@ import { Text } from "@/components/ui/text";
 import { Card } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { useSnapshots } from "@/hooks/useSnapshots";
+import { SnapshotDetailSheet } from "@/components/snapshot/SnapshotDetailSheet";
+import { SnapshotEditSheet } from "@/components/snapshot/SnapshotEditSheet";
 import type { Snapshot } from "@/stores/snapshotsStore";
 
 interface HistoryScreenProps {
@@ -20,6 +22,10 @@ export function HistoryScreen({ onSelectSnapshot }: HistoryScreenProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { snapshots, loadSnapshots } = useSnapshots();
 
+  // 详情/编辑 Sheet 状态
+  const [detailSnapshot, setDetailSnapshot] = useState<Snapshot | null>(null);
+  const [editSnapshot, setEditSnapshot] = useState<Snapshot | null>(null);
+
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     await loadSnapshots();
@@ -29,10 +35,21 @@ export function HistoryScreen({ onSelectSnapshot }: HistoryScreenProps) {
   const handleSelectSnapshot = useCallback(
     (snapshot: Snapshot) => {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      setDetailSnapshot(snapshot);
       onSelectSnapshot?.(snapshot);
     },
     [onSelectSnapshot]
   );
+
+  const handleEditFromDetail = useCallback((snapshot: Snapshot) => {
+    setDetailSnapshot(null);
+    // 短延迟避免 Sheet 动画冲突
+    setTimeout(() => setEditSnapshot(snapshot), 300);
+  }, []);
+
+  const handleEditSaved = useCallback(() => {
+    setEditSnapshot(null);
+  }, []);
 
   // 按月份分组
   const groupedSnapshots = useMemo(() => {
@@ -116,6 +133,24 @@ export function HistoryScreen({ onSelectSnapshot }: HistoryScreenProps) {
           </View>
         )}
       </ScrollView>
+
+      {/* 详情 Sheet */}
+      {detailSnapshot && (
+        <SnapshotDetailSheet
+          snapshot={detailSnapshot}
+          onClose={() => setDetailSnapshot(null)}
+          onEdit={handleEditFromDetail}
+        />
+      )}
+
+      {/* 编辑 Sheet */}
+      {editSnapshot && (
+        <SnapshotEditSheet
+          snapshot={editSnapshot}
+          onClose={() => setEditSnapshot(null)}
+          onSaved={handleEditSaved}
+        />
+      )}
     </SafeAreaView>
   );
 }

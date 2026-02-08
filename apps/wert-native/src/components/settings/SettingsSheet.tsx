@@ -17,6 +17,7 @@ import { useAssets } from "@/hooks/useAssets";
 import { getCategoryColor, hslToRgba } from "@/lib/colors";
 import type { AssetCategory } from "@/db/schema";
 import type { AssetAccount } from "@/stores/assetsStore";
+import { AssetEditSheet } from "./AssetEditSheet";
 
 // 货币选项
 const CURRENCIES = [
@@ -512,6 +513,12 @@ function AssetSettings() {
                     {/* 操作按钮 */}
                     <View className="flex-row gap-2">
                       <Pressable
+                        onPress={() => setEditingAsset(asset)}
+                        className="w-8 h-8 rounded-full bg-muted items-center justify-center"
+                      >
+                        <Text className="text-sm">✏️</Text>
+                      </Pressable>
+                      <Pressable
                         onPress={() => handleToggleActive(asset)}
                         className="w-8 h-8 rounded-full bg-muted items-center justify-center"
                       >
@@ -532,6 +539,14 @@ function AssetSettings() {
             );
           })}
         </View>
+      )}
+
+      {/* 编辑资产 Sheet */}
+      {editingAsset && (
+        <AssetEditSheet
+          asset={editingAsset}
+          onClose={() => setEditingAsset(null)}
+        />
       )}
     </Animated.View>
   );
